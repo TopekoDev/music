@@ -1,16 +1,14 @@
 <template>
     <div>
-        <navbar/>
+        <p>Welcome</p>
     </div>
 </template>
 
 <script>
-import navbar from '../components/navbar';
-
 export default {
-    name: "home",
-    components: {
-        navbar
+    name: "landing",
+    created() { 
+        this.$router.push('/home');
     }
 }
 </script>
