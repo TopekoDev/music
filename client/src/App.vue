@@ -18,5 +18,18 @@ export default {
 </script>
 
 <style>
-
+h1 {
+    color: white;
+}
+h2 {
+    color: white;
+}
+p {
+    color: white;
+}
+body {
+    margin: 0;
+    font-family:Arial, Helvetica, sans-serif;
+    background-color: rgb(15, 15, 15);
+}
 </style>
