@@ -1,7 +1,7 @@
 <template>
     <div class="navbar">
         <div class="search">
-            <input v-on:keyup.enter="search" class="searchBar" v-model="searchField" placeholder="Search YouTube.." type="text">
+            <input v-on:keyup.enter="search" class="searchBar" v-model="searchField" placeholder="Search from YouTube.." type="text">
             <button class="searchBtn" v-on:click="search">Search</button>
         </div>
     </div>
@@ -21,41 +21,45 @@ export default {
     },
     methods: {
         search: function() {
-            this.$router.push('/search?s=' + this.searchField);
-        },
+            this.$router.push('/search?q=' + this.searchField);
+        }
     }
 }
 </script>
 
 <style scoped>
 .navbar {
-    background-color: transparent;
+    background-color: rgb(35, 35, 35);
     width: 100%;
+    position: fixed;
+    top: 0;
 }
 
 .search {
     background-color: none;
     max-width: 500px;
-    padding: 10px 10px 10px 10px;
+    padding: 15px 10px 15px 10px;
     display: flex;
+    margin: auto;
+
 }
 .searchBar {
-    background-color:rgb(25, 25, 25);
+    background-color:rgb(15, 15, 15);
     font-size: 15px;
     border: none;
-    color: white;
-    height: 40px;
+    color: rgb(212, 212, 212);
+    height: 35px;
     min-width: 20px;
     flex: 1;
     padding: 0 15px 0 15px;
-    border-radius: 20px 0 0 20px;
+    border-radius: 10px 0 0 10px;
 }
 .searchBtn {
     background-color: rgb(168, 61, 61);
     border: none;
     color: white;
-    border-radius: 0 20px 20px 0;
+    border-radius: 0 10px 10px 0;
     cursor: pointer;
-    padding-right: 12px;
+    padding-right: 10px;
 }
 </style>

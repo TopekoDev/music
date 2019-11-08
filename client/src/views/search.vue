@@ -1,6 +1,5 @@
 <template>
     <div>
-        <navbar/>
         <div class="results">
             <div class="result" v-on:click="setVideo(searchResults[index])" v-for="(object,index) in searchResults" v-bind:key="index">
                 <img class="image" v-bind:src="searchResults[index].snippet.thumbnails.default.url">
@@ -16,14 +15,13 @@
 <script>
 import axios from 'axios';
 import searchYoutube from 'youtube-api-v3-search';
-import navbar from '../components/navbar';
 
 import { mapMutations } from 'vuex';
 
 export default {
     name: "search",
     components: {
-        navbar
+        
     },
     data() {
         return {
@@ -66,12 +64,18 @@ export default {
             'SET_VIDEO'
         ])
     },
-    created() {
-        this.searchTerm = this.$route.query.s;
+    mounted() {
+        this.searchTerm = this.$route.query.q;
         this.search();
     },
     computed: {
 
+    },
+    watch: {
+        $route() {
+            this.searchTerm = this.$route.query.q;
+            this.search();
+        }
     }
 }
 </script>
@@ -83,18 +87,18 @@ export default {
     color: white;
     cursor: pointer;
     display: block;
-    margin: 10px auto 10px auto;
+    margin: 20px auto 20px auto;
     padding: 10px 30px 10px 30px;
     border-radius: 20px;
 }
 .results {
-    padding: 30px 0 90px 0;
+    padding: 80px 0 90px 0;
 }
 .result {
     background-color: rgb(20, 20, 20);
-    margin: 5px auto;
+    margin: 5px auto 5px auto;
     height: 50px;
-    max-width: 650px;
+    max-width: 60%;
     display: flex;
     border-radius: 5px;
     align-items: center;

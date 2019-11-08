@@ -1,19 +1,30 @@
 <template>
   <div>
     <div class="container">
-      <router-view/>
-      <player v-if="$router.currentRoute.path!='/hello'"/>
+      <navbar v-if="!blacklist.includes($router.currentRoute.path)"/>
+      <sidebar v-if="!blacklist.includes($router.currentRoute.path)"/>
+      <router-view id="router"/>
+      <player v-if="!blacklist.includes($router.currentRoute.path)"/>
     </div>
   </div>
 </template>
 
 <script>
 import player from './components/player';
+import navbar from './components/navbar';
+import sidebar from './components/sidebar';
 export default {
   name: 'app',
   components: {
-    player
+    player,
+    navbar,
+    sidebar
   },
+  data() {
+    return {
+      blacklist: ['/','/404']
+    }
+  }
 }
 </script>
 

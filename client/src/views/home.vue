@@ -1,16 +1,15 @@
 <template>
     <div>
-        <navbar/>
+        <p>home</p>
     </div>
 </template>
 
 <script>
-import navbar from '../components/navbar';
 
 export default {
     name: "home",
     components: {
-        navbar
+        
     }
 }
 </script>
