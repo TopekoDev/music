@@ -29,7 +29,7 @@ export default {
 
 <style scoped>
 .navbar {
-    background-color: rgb(35, 35, 35);
+    background-color: rgb(30, 30, 30);
     width: 100%;
     position: fixed;
     top: 0;
@@ -61,5 +61,10 @@ export default {
     border-radius: 0 10px 10px 0;
     cursor: pointer;
     padding-right: 10px;
+}
+@media (max-width: 860px) {
+    .navbar {
+        z-index: 1;
+    }
 }
 </style>

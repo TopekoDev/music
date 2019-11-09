@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="container">
         <div class="results">
             <div class="result" v-on:click="setVideo(searchResults[index])" v-for="(object,index) in searchResults" v-bind:key="index">
                 <img class="image" v-bind:src="searchResults[index].snippet.thumbnails.default.url">
@@ -81,6 +81,13 @@ export default {
 </script>
 
 <style scoped>
+.container {
+    /* +180px from left is the sidebar width */
+    margin-left: 200px;
+    margin-right: 20px;
+    /* margins for the navbar and player */
+    padding: 80px 0 90px 0;
+}
 .loadBtn {
     background-color: rgb(168, 61, 61);
     border: none;
@@ -92,13 +99,13 @@ export default {
     border-radius: 20px;
 }
 .results {
-    padding: 80px 0 90px 0;
+    
 }
 .result {
     background-color: rgb(20, 20, 20);
     margin: 5px auto 5px auto;
     height: 50px;
-    max-width: 60%;
+    width: 100%;
     display: flex;
     border-radius: 5px;
     align-items: center;
@@ -144,5 +151,12 @@ export default {
 }
 .oBtn:hover {
     color: white;
+}
+@media (max-width: 860px) {
+    .container {
+        margin-left: 75px;
+        margin-right: 10px;
+        padding-top: 70px;
+    }
 }
 </style>
