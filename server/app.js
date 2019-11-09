@@ -18,11 +18,8 @@ const {
 console.log(NODE_ENV);
 
 //routes
-const sendRoute = require("./routes/send.js");
-app.use("/send", sendRoute);
-
-const getRoute = require("./routes/get.js");
-app.use("/get", getRoute);
+const regRoute = require("./routes/register.js");
+app.use("/register", regRoute);
 
 app.get("/", (req, res) => {
     res.send({
@@ -31,7 +28,7 @@ app.get("/", (req, res) => {
 });
 
 //conect to mongodb
-mongoose.connect(DB_URL, { useNewUrlParser: true }, () =>
+mongoose.connect(DB_URL, { useUnifiedTopology: true, useNewUrlParser: true }, () =>
   console.log("connected to mongodb")
 );
 

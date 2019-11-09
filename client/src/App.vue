@@ -22,8 +22,19 @@ export default {
   },
   data() {
     return {
-      blacklist: ['/','/404']
+      blacklist: ['/','/404','/register','/login']
     }
+  },
+  methods: {
+    checkLogin: function() {
+      
+    }
+  },
+  created() {
+    this.checkLogin();
+  },
+  updated() {
+    this.checkLogin();
   }
 }
 </script>

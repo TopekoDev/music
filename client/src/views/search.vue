@@ -13,7 +13,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import searchYoutube from 'youtube-api-v3-search';
 
 import { mapMutations } from 'vuex';
@@ -39,7 +38,7 @@ export default {
                 topicId:'/m/04rlf',
                 maxResults: 10
             }
-            var results = await searchYoutube("AIzaSyBajJPriFZZDdjW53pTQvxdF6HpWb1cC7E", options);
+            var results = await searchYoutube(process.env.VUE_APP_YT_KEY, options);
             this.searchResults = results.items;
             this.nextPage = results.nextPageToken;
         },
@@ -53,7 +52,7 @@ export default {
                 maxResults: 10,
                 pageToken: this.nextPage
             }
-            var results = await searchYoutube("AIzaSyBajJPriFZZDdjW53pTQvxdF6HpWb1cC7E", options);
+            var results = await searchYoutube(process.env.VUE_APP_YT_KEY, options);
             this.nextPage = results.nextPageToken;
             this.searchResults = this.searchResults.concat(results.items);
         },

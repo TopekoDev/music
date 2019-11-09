@@ -7,8 +7,8 @@
 <script>
 export default {
     name: "landing",
-    created() { 
-        this.$router.push('/home');
+    methods: {
+        
     }
 }
 </script>
