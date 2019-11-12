@@ -6,7 +6,7 @@ const bcrypt = require("bcryptjs");
 //set environment variables
 const {
     NODE_ENV, PORT, DB_URL, TOKEN_SECRET, CLIENT_URL
-} = process.env
+} = process.env;
 
 //validation
 const Joi = require("joi");

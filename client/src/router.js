@@ -6,6 +6,7 @@ import search from './views/search';
 import landing from './views/landing';
 import register from './views/register';
 import login from './views/login';
+import settings from './views/settings'
 
 Vue.use(Router);
 
@@ -31,6 +32,10 @@ export default new Router({
         {
             path: '/login',
             component: login
+        },
+        {
+            path: '/settings',
+            component: settings
         }
     ]
 });

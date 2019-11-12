@@ -8,6 +8,7 @@
             <div class="buttons">
                 <button v-on:click="register">Create account</button><br>
                 <button v-on:click="login">Login</button><br>
+                <button id="noaccBtn" v-on:click="home">Use without account</button><br>
             </div>
             <div class="links">
                 <a href="https://github.com/Topekz/tzmusic">GitHub repository</a>
@@ -25,6 +26,9 @@ export default {
         },
         login: function() {
             this.$router.push('/login');
+        },
+        home: function() {
+            this.$router.push('/home');
         }
     }
 }
@@ -60,6 +64,12 @@ export default {
     margin: 0 auto 10px auto;
     padding: 10px 30px 10px 30px;
     color: white;
+    width: 200px;
+}
+#noaccBtn {
+    background-color: transparent;
+    border: 2px solid rgb(139, 139, 139);
+    color: rgb(209, 209, 209);
 }
 button:hover {
     cursor: pointer;

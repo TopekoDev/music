@@ -81,7 +81,16 @@ export default {
     text-align: center;
 }
 .inField {
-  margin: 0 0 5px 0;
+    background-color:rgb(255, 255, 255);
+    font-size: 15px;
+    border: none;
+    color: rgb(0, 0, 0);
+    height: 35px;
+    width: 250px;
+    flex: 1;
+    padding: 0 5px 0 5px;
+    margin-bottom: 5px;
+    border-radius: 2px;
 }
 button {
     background-color: rgb(168, 61, 61);

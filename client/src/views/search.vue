@@ -64,16 +64,21 @@ export default {
         ])
     },
     mounted() {
-        this.apiKey = this.$route.query.k;
+        if(this.$cookie.get('api_key') && this.$cookie.get('api_key')!="") {
+            this.apiKey = this.$cookie.get('api_key');
+        } else {
+            alert("You have to add YouTube API key in the settings!");
+        }
         this.searchTerm = this.$route.query.q;
         this.search();
     },
-    computed: {
-
-    },
     watch: {
         $route() {
-            this.apiKey = this.$route.query.k;
+            if(this.$cookie.get('api_key') && this.$cookie.get('api_key')!="") {
+                this.apiKey = this.$cookie.get('api_key');
+            } else {
+                alert("You have to add YouTube API key in the settings!");
+            }
             this.searchTerm = this.$route.query.q;
             this.search();
         }

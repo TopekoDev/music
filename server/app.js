@@ -14,12 +14,16 @@ app.use(cookieParser());
 //set environment variables
 const {
     NODE_ENV, PORT, DB_URL, TOKEN_SECRET, CLIENT_URL
-} = process.env
+} = process.env;
 console.log(NODE_ENV);
 
 //routes
 const regRoute = require("./routes/register.js");
 app.use("/register", regRoute);
+const loginRoute = require("./routes/login.js");
+app.use("/login", loginRoute);
+const logoutRoute = require("./routes/logout.js") ;
+app.use("/logout", logoutRoute);
 
 app.get("/", (req, res) => {
     res.send({

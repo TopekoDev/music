@@ -18,11 +18,6 @@ const theSchema = mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  api_key: {
-    type: String,
-    max: 50,
-    required: false
-  }, 
   lists: {
     type: Array
   },
