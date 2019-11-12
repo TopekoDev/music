@@ -1,18 +1,85 @@
 <template>
-    <div>
-        <p>Login</p>
+  <div class="container">
+    <div class="centered">
+      <h1>Login to your account</h1>
+      <form v-on:submit.prevent="register">
+        <input class="inField" autocomplete="off" name="username" type="text" placeholder="username" v-model="username" />
+        <br/>
+        <input class="inField" autocomplete="off" name="password" type="password" placeholder="password" v-model="password" />
+        <br/>
+        <button :disabled="logDisabled == true">Login</button>
+        <p style="opacity: 0;" v-if="message==''">blank</p>
+        <p>{{ message }}</p>
+      </form>
     </div>
+  </div>
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
-    name: "login",
-    methods: {
-        
+  name: "login",
+  components: {
+    
+  },
+  data() {
+    return {
+      username: "",
+      password: "",
+      message: "",
+      logDisabled: false
     }
+  },
+  methods: {
+    login: async function() {
+      this.logDisabled = true;
+      //send login data to server
+      const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/login', {
+          method: "post",
+          data: {username: this.username, password: this.password},
+          withCredentials: true
+      });
+      //show error/success message
+      this.message = response.data.msg;
+      //clear fields if not success
+      if(response.data.status != "success") {
+        this.password = "";
+      } else if (response.data.status == "success") {
+        this.$router.push('/home');
+      }
+      this.logDisabled = false;
+    }
+  }
 }
 </script>
 
 <style scoped>
-
+.container {
+    display: table;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+}
+.centered {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+}
+.inField {
+  margin: 0 0 5px 0;
+}
+button {
+    background-color: rgb(168, 61, 61);
+    border: none;
+    border-radius: 10px;
+    margin: 10px 0 0 0;
+    padding: 10px 30px 10px 30px;
+    color: white;
+}
+button:hover {
+    cursor: pointer;
+}
 </style>

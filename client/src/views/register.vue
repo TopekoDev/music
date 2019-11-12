@@ -1,16 +1,19 @@
 <template>
-  <div>
-    <h1>Registeration</h1>
-    <form v-on:submit.prevent="register">
-      <input autocomplete="off" name="username" type="text" placeholder="username" v-model="username" />
-      <br/>
-      <input autocomplete="off" name="password" type="password" placeholder="password" v-model="password" />
-      <br/>
-      <input autocomplete="off" name="password2" type="password" placeholder="confirm password" v-model="password2" />
-      <br/>
-      <button :disabled="regDisabled == true">Register</button>
+  <div class="container">
+    <div class="centered">
+      <h1>Create account</h1>
+      <form v-on:submit.prevent="register">
+        <input class="inField" autocomplete="off" name="username" type="text" placeholder="username" v-model="username" />
+        <br/>
+        <input class="inField" autocomplete="off" name="password" type="password" placeholder="password" v-model="password" />
+        <br/>
+        <input class="inField" autocomplete="off" name="password2" type="password" placeholder="confirm password" v-model="password2" />
+        <br/>
+        <button :disabled="regDisabled == true">Register</button>
+      </form>
+      <p style="opacity: 0;" v-if="message==''">blank</p>
       <p>{{ message }}</p>
-    </form>
+    </div>
   </div>
 </template>
 
@@ -37,7 +40,6 @@ export default {
       if(this.password === this.password2) {
         this.regDisabled = true;
         //post data to server
-        console.log(process.env.VUE_APP_SERVER_ADDRESS);
         const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/register', {
           method: "post",
           data: {username: this.username, password: this.password},
@@ -65,7 +67,31 @@ export default {
 </script>
 
 <style scoped>
-p {
-    color: red;
+.container {
+    display: table;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+}
+.centered {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+}
+.inField {
+  margin: 0 0 5px 0;
+}
+button {
+    background-color: rgb(168, 61, 61);
+    border: none;
+    border-radius: 10px;
+    margin: 10px 0 0 0;
+    padding: 10px 30px 10px 30px;
+    color: white;
+}
+button:hover {
+    cursor: pointer;
 }
 </style>

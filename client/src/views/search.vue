@@ -27,6 +27,7 @@ export default {
             searchTerm: "",
             searchResults: [],
             nextPage: "",
+            apiKey: ""
         }
     },
     methods: {
@@ -38,7 +39,7 @@ export default {
                 topicId:'/m/04rlf',
                 maxResults: 10
             }
-            var results = await searchYoutube(process.env.VUE_APP_YT_KEY, options);
+            var results = await searchYoutube(this.apiKey, options);
             this.searchResults = results.items;
             this.nextPage = results.nextPageToken;
         },
@@ -51,7 +52,7 @@ export default {
                 maxResults: 10,
                 pageToken: this.nextPage
             }
-            var results = await searchYoutube(process.env.VUE_APP_YT_KEY, options);
+            var results = await searchYoutube(this.apiKey, options);
             this.nextPage = results.nextPageToken;
             this.searchResults = this.searchResults.concat(results.items);
         },
@@ -63,6 +64,7 @@ export default {
         ])
     },
     mounted() {
+        this.apiKey = this.$route.query.k;
         this.searchTerm = this.$route.query.q;
         this.search();
     },
@@ -71,6 +73,7 @@ export default {
     },
     watch: {
         $route() {
+            this.apiKey = this.$route.query.k;
             this.searchTerm = this.$route.query.q;
             this.search();
         }
