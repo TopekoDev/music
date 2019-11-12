@@ -43,7 +43,6 @@ export default {
             this.nextPage = results.nextPageToken;
         },
         loadMore: async function() {
-            this.searchTerm = this.searchField;
             var options = {
                 q:this.searchTerm,
                 part:'snippet',
