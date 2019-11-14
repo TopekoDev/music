@@ -6,7 +6,7 @@
                 <li v-on:click="navigate('home')"><HomeIcon class="icons"/>Home</li>
                 <li v-on:click="navigate('user?u=' + 'test')"><UserIcon class="icons"/>Profile</li>
                 <li v-on:click="navigate('settings')"><SettingsIcon class="icons"/>Settings</li>
-                <li v-on:click="navigate('')"><ListIcon class="icons"/>Playlists</li>
+                <li v-on:click="navigate('list')"><ListIcon class="icons"/>List</li>
             </ul>
         </div>
     </div>

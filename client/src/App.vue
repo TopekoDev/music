@@ -26,15 +26,13 @@ export default {
     }
   },
   methods: {
-    checkLogin: function() {
-      
-    }
+    
   },
   created() {
-    this.checkLogin();
+    
   },
   updated() {
-    this.checkLogin();
+    
   }
 }
 </script>

@@ -21,10 +21,10 @@ const theSchema = mongoose.Schema({
   lists: {
     type: Array
   },
-  saved_lists: {
+  liked_lists: {
     type: Array
   },
-  saved_songs: {
+  added_videos: {
     type: Array
   }
 });

@@ -37,7 +37,7 @@
                 <ChevronUpIcon id="moreIcon"/>
                 <p class="title">{{ ytInfo.snippet.title }}</p>
                 <YoutubeIcon style="padding-right: 10px" class="infoBtn"/>
-                <PlusIcon class="infoBtn"/>
+                <PlusIcon v-on:click="addVideo" class="infoBtn"/>
             </div>
             <div class="controls">
                 <youtube width=0 height=0 v-bind:video-id="ytInfo.id.videoId" v-bind:player-vars="playerVars" v-on:cued="cued" v-on:playing="playing" v-on:ended="ended" ref="youtube"></youtube>
@@ -67,6 +67,7 @@
 <script>
 import { mapState } from 'vuex';
 import { PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, Volume2Icon, VolumeXIcon, YoutubeIcon, PlusIcon, ShuffleIcon, RepeatIcon } from 'vue-feather-icons';
+import axios from 'axios';
 
 export default {
     name: "player",
@@ -89,6 +90,16 @@ export default {
         }
     },
     methods: {
+        addVideo: async function() {
+            var theVid = this.ytInfo;
+            theVid.date = new Date;
+            const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/add', {
+                method: "post",
+                data: {video: theVid},
+                withCredentials: true
+            });
+            alert("added to list");
+        },
         playVideo: function() {
             if(this.ytInfo.id.videoId!='none') {
                 this.$refs.youtube.player.playVideo();
@@ -218,6 +229,10 @@ export default {
     color: rgb(212, 212, 212);
     width: 24px;
     height: 24px;
+}
+.infoBtn:hover {
+    cursor: pointer;
+    color: rgb(177, 58, 58);
 }
 .controls {
     background-color: none;

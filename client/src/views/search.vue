@@ -4,7 +4,7 @@
             <div class="result" v-on:click="setVideo(searchResults[index])" v-for="(object,index) in searchResults" v-bind:key="index">
                 <img class="image" v-bind:src="searchResults[index].snippet.thumbnails.default.url">
                 <button class="nBtn">{{ index+1 }}</button>
-                <button class="oBtn">···</button>
+                <button v-on:click.stop v-on:click="addVideo(searchResults[index])" class="oBtn">+</button>
                 <p class="title">{{ searchResults[index].snippet.title }}</p>
             </div>
             <button v-if="searchResults.length > 0" class="loadBtn" v-on:click="loadMore">Load more</button>
@@ -14,7 +14,7 @@
 
 <script>
 import searchYoutube from 'youtube-api-v3-search';
-
+import axios from 'axios';
 import { mapMutations } from 'vuex';
 
 export default {
@@ -58,6 +58,16 @@ export default {
         },
         setVideo: function(video) {
             this.SET_VIDEO(video);
+        },
+        addVideo: async function(video) {
+            var theVid = video;
+            theVid.date = new Date;
+            const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/add', {
+                method: "post",
+                data: {video: theVid},
+                withCredentials: true
+            });
+            alert("added to list");
         },
         ...mapMutations([
             'SET_VIDEO'

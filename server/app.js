@@ -24,6 +24,12 @@ const loginRoute = require("./routes/login.js");
 app.use("/login", loginRoute);
 const logoutRoute = require("./routes/logout.js") ;
 app.use("/logout", logoutRoute);
+const addRoute = require("./routes/add.js");
+app.use("/add", addRoute);
+const removeRoute = require("./routes/remove.js");
+app.use("/remove", removeRoute);
+const userRoute = require("./routes/user.js")
+app.use("/user", userRoute);
 
 app.get("/", (req, res) => {
     res.send({

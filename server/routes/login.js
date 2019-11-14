@@ -33,7 +33,7 @@ router.post("/", async (req, res) => {
     id: user._id, username: user.username, email: user.email
   }, TOKEN_SECRET);
 
-  //send token back as a cookie
+  //send token back in a cookie
   res.cookie('token', token, {maxAge: 1000*60*60*24*365*2, httpOnly: true, domain: CLIENT_URL});
   res.cookie('loggedin', 'true', {maxAge: 1000*60*60*24*365*2, httpOnly: false, domain: CLIENT_URL});
   //send details

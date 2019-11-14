@@ -87,7 +87,7 @@ export default {
     color: rgb(0, 0, 0);
     border-radius: 2px;
     cursor: pointer;
-    padding: 9px 5px 9px 5px;
+    height: 35px;
     margin-left: 5px;
 }
 #logoutBtn {

@@ -30,6 +30,11 @@ export default {
         home: function() {
             this.$router.push('/home');
         }
+    },
+    created() {
+        if(this.$cookie.get('loggedin')=="true") {
+            this.$router.push('/home');
+        }
     }
 }
 </script>

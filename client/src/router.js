@@ -7,6 +7,7 @@ import landing from './views/landing';
 import register from './views/register';
 import login from './views/login';
 import settings from './views/settings'
+import list from './views/list';
 
 Vue.use(Router);
 
@@ -36,6 +37,10 @@ export default new Router({
         {
             path: '/settings',
             component: settings
+        },
+        {
+            path: '/list',
+            component: list
         }
     ]
 });
