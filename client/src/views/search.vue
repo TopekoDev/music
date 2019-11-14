@@ -64,10 +64,14 @@ export default {
         ])
     },
     mounted() {
-        if(this.$cookie.get('api_key') && this.$cookie.get('api_key')!="") {
-            this.apiKey = this.$cookie.get('api_key');
+        if(this.$cookie.get('public_key')) {
+            this.apiKey = process.env.VUE_APP_APIKEY;
         } else {
-            alert("You have to add YouTube API key in the settings!");
+            if(this.$cookie.get('api_key') && this.$cookie.get('api_key')!="") {
+                this.apiKey = this.$cookie.get('api_key');
+            } else {
+                alert("You have to add YouTube API key in the settings!");
+            }
         }
         this.searchTerm = this.$route.query.q;
         this.search();
