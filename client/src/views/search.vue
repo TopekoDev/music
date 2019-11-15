@@ -179,4 +179,16 @@ export default {
         padding-top: 70px;
     }
 }
+@media (max-width: 500px) {
+    .nBtn {
+        display: none;
+    }
+    .oBtn {
+        display: block;
+        background-color: rgb(20, 20, 20);
+    }
+    .result:hover .oBtn {
+        background-color: rgb(25, 25, 25);
+    }
+}
 </style>

@@ -26,6 +26,9 @@ const theSchema = mongoose.Schema({
   },
   added_videos: {
     type: Array
+  },
+  history: {
+    type: Array
   }
 });
 

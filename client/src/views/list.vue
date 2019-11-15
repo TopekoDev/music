@@ -110,13 +110,6 @@ export default {
 .oBtn:hover {
     color: white;
 }
-@media (max-width: 860px) {
-    .container {
-        margin-left: 75px;
-        margin-right: 10px;
-        padding-top: 70px;
-    }
-}
 .container {
     /* +180px from left is the sidebar width */
     margin-left: 200px;
@@ -127,6 +120,19 @@ export default {
     .container {
         margin-top: 75px;
         margin-left: 75px;
+        margin-right: 10px;
+    }
+}
+@media (max-width: 500px) {
+    .nBtn {
+        display: none;
+    }
+    .oBtn {
+        display: block;
+        background-color: rgb(20, 20, 20);
+    }
+    .result:hover .oBtn {
+        background-color: rgb(25, 25, 25);
     }
 }
 </style>

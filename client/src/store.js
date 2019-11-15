@@ -1,5 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import axios from 'axios';
+import cookies from 'vue-cookie';
 
 Vue.use(Vuex);
 
@@ -14,6 +16,15 @@ export default new Vuex.Store({
     mutations: {
         SET_VIDEO: (state, video) => {
             state.ytInfo = video;
+            if(cookies.get('log_history')) {
+                var theVid = video;
+                theVid.date = new Date;
+                axios(process.env.VUE_APP_SERVER_ADDRESS + '/log', {
+                    method: "post",
+                    data: {video: theVid},
+                    withCredentials: true
+                });
+            }
         }
     },
     actions: {

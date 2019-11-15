@@ -28,8 +28,12 @@ const addRoute = require("./routes/add.js");
 app.use("/add", addRoute);
 const removeRoute = require("./routes/remove.js");
 app.use("/remove", removeRoute);
-const userRoute = require("./routes/user.js")
+const userRoute = require("./routes/user.js");
 app.use("/user", userRoute);
+const logRoute = require("./routes/log.js");
+app.use("/log", logRoute);
+const clearRoute = require("./routes/clear.js");
+app.use("/clear", clearRoute);
 
 app.get("/", (req, res) => {
     res.send({

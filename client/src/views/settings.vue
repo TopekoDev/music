@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <h1>Settings</h1>
-        <p>YouTube API key (Required):</p>
+        <h2>YouTube API key (Required):</h2>
         <p style="color: grey; font-size: 13px;">The key will be stored locally in a cookie.</p>
         <input id="keyInput" v-model="apiKey" placeholder="Enter key.." type="text">
         <button id="keySubmit" v-on:click="submitKey">Submit</button>
@@ -10,8 +10,16 @@
         <label for="pkc" style="color: white;">Use our API key instead</label>
         <p style="color: grey; font-size: 13px;">The key has limited uses and might not always work!</p>
         <br>
-        <p>Logout of your account</p>
-        <button id="logoutBtn" v-on:click="logout">Logout</button>
+        <h2>Privacy</h2>
+        <input v-model="historyLog" v-on:click="historyLogBox" type="checkbox" name="" id="hlc">
+        <label for="hlc" style="color: white;">Enable listening history</label>
+        <p style="color: grey; font-size: 13px;">History will be stored in the database!</p>
+        <button id="logoutBtn" v-on:click="historyClear">Remove history</button><br>
+        <button style="margin-top: 5px;" id="dataBtn" v-on:click="viewData">View your data</button>
+        <br><br>
+        <h2>Account</h2>
+        <button id="logoutBtn" v-on:click="logout">Logout</button><br>
+        <button style="margin-top: 5px;" id="removeAccBtn" v-on:click="removeAccount">Remove account and data</button>
     </div>
 </template>
 
@@ -23,7 +31,8 @@ export default {
     data() {
         return {
             apiKey: "",
-            publicKey: Boolean
+            publicKey: Boolean,
+            historyLog: Boolean
         }
     },
     methods: {
@@ -42,6 +51,29 @@ export default {
                 this.publicKey = false;
             }
         },
+        historyLogBox: function() {
+            if(this.$cookie.get('log_history')) {
+                this.$cookie.delete('log_history');
+            } else {
+                this.$cookie.set('log_history', "true", { expires: '2Y' });
+            }
+            if(this.$cookie.get('log_history')) {
+                this.historyLog = true;
+            } else {
+                this.historyLog = false;
+            }
+        },
+        historyClear: async function() {
+            //send clear request
+            await axios(process.env.VUE_APP_SERVER_ADDRESS + '/clear', {
+                method: "post",
+                data: {type: 'history'},
+                withCredentials: true
+            });
+        },
+        viewData: function() {
+            window.location=process.env.VUE_APP_SERVER_ADDRESS + '/user';
+        },
         logout: async function() {
             //logout the user
             await axios(process.env.VUE_APP_SERVER_ADDRESS + '/logout', {
@@ -49,6 +81,16 @@ export default {
                 withCredentials: true
             });
             this.$router.push('/');
+        },
+        removeAccount: async function() {
+            //logout first
+            this.logout();
+            //send clear request
+            await axios(process.env.VUE_APP_SERVER_ADDRESS + '/clear', {
+                method: "post",
+                data: {type: 'account'},
+                withCredentials: true
+            });
         }
     },
     mounted() {
@@ -60,6 +102,11 @@ export default {
         } else {
             this.publicKey = false;
         }
+        if(this.$cookie.get('log_history')) {
+            this.historyLog = true;
+        } else {
+            this.historyLog = false;
+        }
     }
 }
 </script>
@@ -69,6 +116,7 @@ export default {
     /* +180px from left is the sidebar width and top margin is the navbar*/
     margin-left: 200px;
     margin-top: 80px;
+    margin-bottom: 110px;
 }
 #keyInput {
     background-color:rgb(255, 255, 255);
@@ -91,6 +139,30 @@ export default {
     margin-left: 5px;
 }
 #logoutBtn {
+    background-color: rgb(255, 255, 255);
+    border: none;
+    color: rgb(0, 0, 0);
+    border-radius: 2px;
+    cursor: pointer;
+    height: 35px;
+}
+#clearHistBtn {
+    background-color: rgb(255, 255, 255);
+    border: none;
+    color: rgb(0, 0, 0);
+    border-radius: 2px;
+    cursor: pointer;
+    height: 35px;
+}
+#dataBtn {
+    background-color: rgb(255, 255, 255);
+    border: none;
+    color: rgb(0, 0, 0);
+    border-radius: 2px;
+    cursor: pointer;
+    height: 35px;
+}
+#removeAccBtn {
     background-color: rgb(255, 255, 255);
     border: none;
     color: rgb(0, 0, 0);
