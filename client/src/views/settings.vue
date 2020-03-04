@@ -11,10 +11,6 @@
         <p style="color: grey; font-size: 13px;">The key has limited uses and might not always work!</p>
         <br>
         <h2>Privacy</h2>
-        <input v-model="historyLog" v-on:click="historyLogBox" type="checkbox" name="" id="hlc">
-        <label for="hlc" style="color: white;">Enable listening history</label>
-        <p style="color: grey; font-size: 13px;">History will be stored in the database!</p>
-        <button id="logoutBtn" v-on:click="historyClear">Remove history</button><br>
         <button style="margin-top: 5px;" id="dataBtn" v-on:click="viewData">View your data</button>
         <br><br>
         <h2>Account</h2>
@@ -32,7 +28,6 @@ export default {
         return {
             apiKey: "",
             publicKey: Boolean,
-            historyLog: Boolean
         }
     },
     methods: {
@@ -51,26 +46,6 @@ export default {
                 this.publicKey = false;
             }
         },
-        historyLogBox: function() {
-            if(this.$cookie.get('log_history')) {
-                this.$cookie.delete('log_history');
-            } else {
-                this.$cookie.set('log_history', "true", { expires: '2Y' });
-            }
-            if(this.$cookie.get('log_history')) {
-                this.historyLog = true;
-            } else {
-                this.historyLog = false;
-            }
-        },
-        historyClear: async function() {
-            //send clear request
-            await axios(process.env.VUE_APP_SERVER_ADDRESS + '/clear', {
-                method: "post",
-                data: {type: 'history'},
-                withCredentials: true
-            });
-        },
         viewData: function() {
             window.location=process.env.VUE_APP_SERVER_ADDRESS + '/user';
         },
@@ -83,14 +58,18 @@ export default {
             this.$router.push('/');
         },
         removeAccount: async function() {
-            //logout first
-            this.logout();
-            //send clear request
-            await axios(process.env.VUE_APP_SERVER_ADDRESS + '/clear', {
-                method: "post",
-                data: {type: 'account'},
-                withCredentials: true
-            });
+            //confirmation
+            let confirmRemove = confirm("Are you sure?");
+            if(confirmRemove) {
+                //logout first
+                this.logout();
+                //send account remove request
+                await axios(process.env.VUE_APP_SERVER_ADDRESS + '/account', {
+                    method: "post",
+                    data: {type: 'remove'},
+                    withCredentials: true
+                });
+            }
         }
     },
     mounted() {
@@ -101,11 +80,6 @@ export default {
             this.publicKey = true;
         } else {
             this.publicKey = false;
-        }
-        if(this.$cookie.get('log_history')) {
-            this.historyLog = true;
-        } else {
-            this.historyLog = false;
         }
     }
 }
@@ -124,7 +98,8 @@ export default {
     border: none;
     color: rgb(0, 0, 0);
     height: 35px;
-    width: 350px;
+    width: 50%;
+    max-width: 350px;
     flex: 1;
     padding: 0 5px 0 5px;
     border-radius: 2px;
@@ -139,14 +114,6 @@ export default {
     margin-left: 5px;
 }
 #logoutBtn {
-    background-color: rgb(255, 255, 255);
-    border: none;
-    color: rgb(0, 0, 0);
-    border-radius: 2px;
-    cursor: pointer;
-    height: 35px;
-}
-#clearHistBtn {
     background-color: rgb(255, 255, 255);
     border: none;
     color: rgb(0, 0, 0);

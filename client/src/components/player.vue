@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div id="morePanel">
+        <div id="morePanel" style="bottom: -100%;">
             <div class="closeArea" v-on:click="viewMore">
                 <ChevronDownIcon id="closeMoreIcon"/>
                 <p id="closeMoreTitle">Close</p>
@@ -18,7 +18,7 @@
                     <div v-if="!isCued" :style="{ width: (progress/duration)*100 + '%' }" id="mobileProgress-bar"></div>
                     <div v-if="isCued" id="mobilePlaceholder-bar"></div>
                 </div>
-                <ShuffleIcon class="mobileCtrlL" id="mobileShuffle" v-on:click="shuffle"/>
+                <MoreVerticalIcon class="mobileCtrlL" id="mobileMore" v-on:click="more"/>
                 <SkipBackIcon class="mobileCtrlL" id="mobileBack" v-on:click="skipBack"/>
                 <PlayCircleIcon class="mobileCtrlC" style="padding: 0 13px 0 13px" id="mobilePlay" v-if="!isPlaying" v-on:click="playVideo"/>
                 <PauseCircleIcon class="mobileCtrlC" style="padding: 0 13px 0 13px" id="mobilePause" v-if="isPlaying" v-on:click="pauseVideo"/>
@@ -36,12 +36,11 @@
             <div class="info">
                 <ChevronUpIcon id="moreIcon"/>
                 <p class="title">{{ ytInfo.snippet.title }}</p>
-                <YoutubeIcon style="padding-right: 10px" class="infoBtn"/>
-                <PlusIcon v-on:click="addVideo" class="infoBtn"/>
+                <YoutubeIcon style="padding-right: 10px" class="infoBtn" v-on:click="openYt"/>
             </div>
             <div class="controls">
                 <youtube width=0 height=0 v-bind:video-id="ytInfo.id.videoId" v-bind:player-vars="playerVars" v-on:cued="cued" v-on:playing="playing" v-on:ended="ended" ref="youtube"></youtube>
-                <ShuffleIcon class="ctrlIcon" id="shuffle" v-on:click="shuffle"/>
+                <MoreVerticalIcon class="ctrlIcon" id="more" v-on:click="more"/>
                 <SkipBackIcon class="ctrlIcon" id="back" v-on:click="skipBack"/>
                 <PlayCircleIcon class="ctrlIcon" style="padding: 0 13px 0 13px" id="play" v-if="!isPlaying" v-on:click="playVideo"/>
                 <PauseCircleIcon class="ctrlIcon" style="padding: 0 13px 0 13px" id="pause" v-if="isPlaying" v-on:click="pauseVideo"/>
@@ -66,13 +65,13 @@
 
 <script>
 import { mapState } from 'vuex';
-import { PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, Volume2Icon, VolumeXIcon, YoutubeIcon, PlusIcon, ShuffleIcon, RepeatIcon } from 'vue-feather-icons';
+import { PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, Volume2Icon, VolumeXIcon, YoutubeIcon, PlusIcon, MoreVerticalIcon, RepeatIcon } from 'vue-feather-icons';
 import axios from 'axios';
 
 export default {
     name: "player",
     components: {
-        PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, Volume2Icon, VolumeXIcon, YoutubeIcon, PlusIcon, ShuffleIcon, RepeatIcon
+        PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, Volume2Icon, VolumeXIcon, YoutubeIcon, PlusIcon, MoreVerticalIcon, RepeatIcon
     },
     data() {
         return {
@@ -158,7 +157,7 @@ export default {
                 this.onRepeat = false;
             }
         },
-        shuffle: function() {
+        more: function() {
 
         },
         skip: function() {
@@ -169,9 +168,12 @@ export default {
                 this.seekVideo(0);
             }
         },
+        openYt: function() {
+            window.open("https://youtube.com/watch?v=" + this.ytInfo.id.videoId, "_blank");   
+        },
         viewMore: function(event) {
             if(window.innerWidth <= '500') {
-                var tag = (event.target.tagName);
+                var tag = event.target.tagName;
                 if(tag!='svg' && tag!='polygon' && tag!='circle' && tag!='line') {
                     if(document.getElementById('morePanel').style.bottom == '-100%') {
                         document.getElementById('morePanel').style.bottom = '0';
@@ -187,7 +189,7 @@ export default {
             'ytInfo'
         ])
     },
-    created() {
+    mounted() {
         setInterval(this.updateVideo,250);
     }
 }
@@ -255,7 +257,7 @@ export default {
     position: relative;
     bottom: 4px;
 }
-#shuffle, #repeat, #repeatO {
+#more, #repeat, #repeatO {
     width: 20px;
     height: 20px;
     color: rgb(204, 204, 204);
@@ -381,7 +383,7 @@ export default {
         padding: 0;
         margin-top: 22px;
     }
-    #back, #forward, #shuffle, #repeat, #repeatO {
+    #back, #forward, #more, #repeat, #repeatO {
         display: none;
     }
     #seekbar {
@@ -503,7 +505,7 @@ export default {
         margin-bottom: -9px;
         cursor: pointer;
     }
-    #mobileShuffle, #mobileRepeat, #mobileRepeatO {
+    #mobileMore, #mobileRepeat, #mobileRepeatO {
         height: 25px;
         width: 25px;
         margin: 0 10px 1px 10px;

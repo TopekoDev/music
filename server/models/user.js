@@ -21,13 +21,7 @@ const theSchema = mongoose.Schema({
   lists: {
     type: Array
   },
-  liked_lists: {
-    type: Array
-  },
   added_videos: {
-    type: Array
-  },
-  history: {
     type: Array
   }
 });

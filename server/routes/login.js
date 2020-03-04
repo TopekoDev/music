@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 
 //set environment variables
 const {
-    NODE_ENV, PORT, DB_URL, TOKEN_SECRET, CLIENT_URL
+    NODE_ENV, PORT, DB_URL, TOKEN_SECRET, CLIENT_DOMAIN
 } = process.env;
 
 //validation
@@ -34,8 +34,8 @@ router.post("/", async (req, res) => {
   }, TOKEN_SECRET);
 
   //send token back in a cookie
-  res.cookie('token', token, {maxAge: 1000*60*60*24*365*2, httpOnly: true, domain: CLIENT_URL});
-  res.cookie('loggedin', 'true', {maxAge: 1000*60*60*24*365*2, httpOnly: false, domain: CLIENT_URL});
+  res.cookie('token', token, {maxAge: 1000*60*60*24*365*2, httpOnly: true, domain: CLIENT_DOMAIN});
+  res.cookie('loggedin', 'true', {maxAge: 1000*60*60*24*365*2, httpOnly: false, domain: CLIENT_DOMAIN});
   //send details
   res.json({"msg":"Logged in as " + user.username,"status":"success"});
 });

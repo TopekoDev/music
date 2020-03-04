@@ -13,7 +13,7 @@ app.use(cookieParser());
 
 //set environment variables
 const {
-    NODE_ENV, PORT, DB_URL, TOKEN_SECRET, CLIENT_URL
+    NODE_ENV, PORT, DB_URL, TOKEN_SECRET, CLIENT_DOMAIN
 } = process.env;
 console.log(NODE_ENV);
 
@@ -30,10 +30,8 @@ const removeRoute = require("./routes/remove.js");
 app.use("/remove", removeRoute);
 const userRoute = require("./routes/user.js");
 app.use("/user", userRoute);
-const logRoute = require("./routes/log.js");
-app.use("/log", logRoute);
-const clearRoute = require("./routes/clear.js");
-app.use("/clear", clearRoute);
+const accountRoute = require("./routes/account.js");
+app.use("/account", accountRoute);
 
 app.get("/", (req, res) => {
     res.send({

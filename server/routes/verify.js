@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 
 //set environment variables
 const {
-    NODE_ENV, PORT, DB_URL, TOKEN_SECRET, CLIENT_URL
+    NODE_ENV, PORT, DB_URL, TOKEN_SECRET, CLIENT_DOMAIN
 } = process.env;
 
 module.exports = function (req, res, next) {

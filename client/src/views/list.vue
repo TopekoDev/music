@@ -3,12 +3,13 @@
         <p>Songs on your list:</p>
         <div class="results">
             <div class="result" v-on:click="setVideo(songs[index])" v-for="(object,index) in songs" v-bind:key="index">
-                <img class="image" v-bind:src="songs[index].snippet.thumbnails.default.url">
+                <img class="image" v-bind:src="songs[index].video.snippet.thumbnails.default.url">
                 <button class="nBtn">{{ index+1 }}</button>
-                <button v-on:click.stop v-on:click="removeVideo(songs[index].date, songs[index].etag)" class="oBtn">-</button>
-                <p class="title">{{ songs[index].snippet.title }}</p>
+                <button v-on:click.stop v-on:click="removeVideo(songs[index].date)" class="oBtn">-</button>
+                <p class="title">{{ songs[index].video.snippet.title }}</p>
             </div>
         </div>
+        <button v-on:click="removeList()">Remove list</button>
     </div>
 </template>
 
@@ -23,6 +24,7 @@ export default {
     },
     data() {
         return {
+            listId: "",
             songs: []
         }
     },
@@ -35,22 +37,37 @@ export default {
                 method: "get",
                 withCredentials: true
             });
-            this.songs = theUser.data[0].added_videos;
+            this.songs = theUser.data[0].added_videos.filter(x => x.list === this.listId);
         },
         removeVideo: async function(addDate) {
             const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/remove', {
                 method: "post",
-                data: {date: addDate},
+                data: {type: 'video', date: addDate},
                 withCredentials: true
             });
             this.getVideos();
+        },
+        removeList: async function() {
+            const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/remove', {
+                method: "post",
+                data: {type: 'list', id: this.listId},
+                withCredentials: true
+            });
+            this.$router.push('/home');
         },
         ...mapMutations([
             'SET_VIDEO'
         ])
     },
     mounted() {
+        this.listId = this.$route.query.l;
         this.getVideos();
+    },
+    watch: {
+        $route() {
+            this.listId = this.$route.query.l;
+            this.getVideos();
+        }
     }
 }
 </script>

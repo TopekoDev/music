@@ -4,10 +4,18 @@
             <div class="result" v-on:click="setVideo(searchResults[index])" v-for="(object,index) in searchResults" v-bind:key="index">
                 <img class="image" v-bind:src="searchResults[index].snippet.thumbnails.default.url">
                 <button class="nBtn">{{ index+1 }}</button>
-                <button v-on:click.stop v-on:click="addVideo(searchResults[index])" class="oBtn">+</button>
+                <button v-on:click.stop v-on:click="addToList(searchResults[index])" class="oBtn">+</button>
                 <p class="title">{{ searchResults[index].snippet.title }}</p>
             </div>
             <button v-if="searchResults.length > 0" class="loadBtn" v-on:click="loadMore">Load more</button>
+        </div>
+        <div class="listAdd" v-if="listAdder">
+            <p>Add to list:</p>
+            <div v-for="(object,index) in lists" v-bind:key="index">
+                <button v-on:click="addVideo(selectedVideo, lists[index].id)">{{ lists[index].name }}</button>
+            </div>
+            <br>
+            <button v-on:click="listAdder=false">Cancel</button>
         </div>
     </div>
 </template>
@@ -27,7 +35,10 @@ export default {
             searchTerm: "",
             searchResults: [],
             nextPage: "",
-            apiKey: ""
+            apiKey: "",
+            listAdder: false,
+            selectedVideo: "",
+            lists: []
         }
     },
     methods: {
@@ -37,7 +48,8 @@ export default {
                 part:'snippet',
                 type:'video',
                 topicId:'/m/04rlf',
-                maxResults: 10
+                maxResults: 10,
+                pageToken: ''
             }
             var results = await searchYoutube(this.apiKey, options);
             this.searchResults = results.items;
@@ -53,21 +65,35 @@ export default {
                 pageToken: this.nextPage
             }
             var results = await searchYoutube(this.apiKey, options);
-            this.nextPage = results.nextPageToken;
             this.searchResults = this.searchResults.concat(results.items);
+            this.nextPage = results.nextPageToken;
         },
         setVideo: function(video) {
             this.SET_VIDEO(video);
         },
-        addVideo: async function(video) {
-            var theVid = video;
-            theVid.date = new Date;
-            const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/add', {
-                method: "post",
-                data: {video: theVid},
+        addToList: function(video) {
+            this.getLists();
+            this.listAdder = true;
+            this.selectedVideo = video;
+        },
+        getLists: async function() {
+            const theUser = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/user', {
+                method: "get",
                 withCredentials: true
             });
-            alert("added to list");
+            this.lists = theUser.data[0].lists;
+        },
+        addVideo: async function(video, theList) {
+            let theVid = video;
+            let theDate = new Date;
+            const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/add', {
+                method: "post",
+                data: {type: 'video' ,list: theList, video: theVid, date: theDate},
+                withCredentials: true
+            });
+            this.listAdder = false;
+            this.selectedVideo = "";
+            console.log(response);
         },
         ...mapMutations([
             'SET_VIDEO'
@@ -88,10 +114,14 @@ export default {
     },
     watch: {
         $route() {
-            if(this.$cookie.get('api_key') && this.$cookie.get('api_key')!="") {
-                this.apiKey = this.$cookie.get('api_key');
+            if(this.$cookie.get('public_key')) {
+            this.apiKey = process.env.VUE_APP_APIKEY;
             } else {
-                alert("You have to add YouTube API key in the settings!");
+                if(this.$cookie.get('api_key') && this.$cookie.get('api_key')!="") {
+                    this.apiKey = this.$cookie.get('api_key');
+                } else {
+                    alert("You have to add YouTube API key in the settings!");
+                }
             }
             this.searchTerm = this.$route.query.q;
             this.search();
@@ -101,6 +131,18 @@ export default {
 </script>
 
 <style scoped>
+.listAdd {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    padding-top: 40vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
 .container {
     /* +180px from left is the sidebar width */
     margin-left: 200px;
@@ -117,9 +159,6 @@ export default {
     margin: 20px auto 20px auto;
     padding: 10px 30px 10px 30px;
     border-radius: 20px;
-}
-.results {
-    
 }
 .result {
     background-color: rgb(20, 20, 20);
