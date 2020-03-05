@@ -2,7 +2,7 @@
     <div class="container">
         <p>Songs on your list:</p>
         <div class="results">
-            <div class="result" v-on:click="setVideo(songs[index])" v-for="(object,index) in songs" v-bind:key="index">
+            <div class="result" v-on:click="setVideo(songs[index].video)" v-for="(object,index) in songs" v-bind:key="index">
                 <img class="image" v-bind:src="songs[index].video.snippet.thumbnails.default.url">
                 <button class="nBtn">{{ index+1 }}</button>
                 <button v-on:click.stop v-on:click="removeVideo(songs[index].date)" class="oBtn">-</button>
@@ -56,7 +56,8 @@ export default {
             this.$router.push('/home');
         },
         ...mapMutations([
-            'SET_VIDEO'
+            'SET_VIDEO',
+            'QUEUE_VIDEO'
         ])
     },
     mounted() {

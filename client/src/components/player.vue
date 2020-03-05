@@ -64,7 +64,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { mapMutations, mapState } from 'vuex';
 import { PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, Volume2Icon, VolumeXIcon, YoutubeIcon, PlusIcon, MoreVerticalIcon, RepeatIcon } from 'vue-feather-icons';
 import axios from 'axios';
 
@@ -134,10 +134,16 @@ export default {
             if(this.onRepeat) {
                 this.playVideo();
             } else {
-                this.pauseVideo();
-                this.seekVideo(0);
-            }
-            this.isPlaying = false;
+                if(this.queue.length > 0) {
+                    if(this.queue[0].id.videoId == this.ytInfo.id.videoId) {
+                        this.playVideo();
+                    }
+                    this.NEXT_VIDEO();
+                } else {
+                    this.pauseVideo();
+                    this.seekVideo(0);
+                }
+            }  
         },
         cued: function() {
             this.isCued = true;
@@ -161,11 +167,15 @@ export default {
 
         },
         skip: function() {
-
+            this.seekVideo(this.duration);
         },
         skipBack: function() {
             if(this.progress >= 5) {
                 this.seekVideo(0);
+            } else {
+                if(this.history.length > 1) {
+                    this.PREVIOUS_VIDEO();
+                }
             }
         },
         openYt: function() {
@@ -182,11 +192,19 @@ export default {
                     }
                 }
             }
-        }
+        },
+        ...mapMutations([
+            'SET_VIDEO',
+            'NEXT_VIDEO',
+            'QUEUE_VIDEO',
+            'PREVIOUS_VIDEO'
+        ])
     },
     computed: {
         ...mapState([
-            'ytInfo'
+            'ytInfo',
+            'queue',
+            'history'
         ])
     },
     mounted() {
