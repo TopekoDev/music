@@ -170,12 +170,14 @@ export default {
             this.seekVideo(this.duration);
         },
         skipBack: function() {
-            if(this.progress >= 5) {
-                this.seekVideo(0);
-            } else {
-                if(this.history.length > 1) {
+            if(this.history.length > 0) {
+                if(this.progress >= 5) {
+                    this.seekVideo(0);
+                } else {
                     this.PREVIOUS_VIDEO();
                 }
+            } else {
+                this.seekVideo(0);
             }
         },
         openYt: function() {

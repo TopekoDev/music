@@ -1,8 +1,9 @@
 <template>
     <div class="container">
         <p>Songs on your list:</p>
+        <button v-on:click="playList(0)">Play</button>
         <div class="results">
-            <div class="result" v-on:click="setVideo(songs[index].video)" v-for="(object,index) in songs" v-bind:key="index">
+            <div class="result" v-on:click="playList(index)" v-for="(object,index) in songs" v-bind:key="index">
                 <img class="image" v-bind:src="songs[index].video.snippet.thumbnails.default.url">
                 <button class="nBtn">{{ index+1 }}</button>
                 <button v-on:click.stop v-on:click="removeVideo(songs[index].date)" class="oBtn">-</button>
@@ -32,6 +33,15 @@ export default {
         setVideo: function(video) {
             this.SET_VIDEO(video);
         },
+        playList: function(index) {
+            this.setVideo(this.songs[index].video);
+            for(var i = index-1; i >= 0; i--) {
+                this.HISTORY_VIDEO(this.songs[i].video);
+            }
+            for(var i = this.songs.length-1; i > index; i--) {
+                this.QUEUE_VIDEO(this.songs[i].video);
+            }
+        },
         getVideos: async function() {
             const theUser = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/user', {
                 method: "get",
@@ -57,7 +67,8 @@ export default {
         },
         ...mapMutations([
             'SET_VIDEO',
-            'QUEUE_VIDEO'
+            'QUEUE_VIDEO',
+            'HISTORY_VIDEO'
         ])
     },
     mounted() {
