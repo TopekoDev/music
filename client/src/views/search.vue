@@ -10,12 +10,14 @@
             <button v-if="searchResults.length > 0" class="loadBtn" v-on:click="loadMore">Load more</button>
         </div>
         <div class="listAdd" v-if="listAdder">
-            <p>Add to list:</p>
-            <div v-for="(object,index) in lists" v-bind:key="index">
-                <button v-on:click="addVideo(selectedVideo, lists[index].id)">{{ lists[index].name }}</button>
+            <p style="margin: 0 0 10px 0; padding: 0;">Add to list</p>
+            <div class="innerlist">
+                <div v-for="(object,index) in lists" v-bind:key="index">
+                <button id="list" v-on:click="addVideo(selectedVideo, lists[index].id)">{{ lists[index].name }}</button>
+                </div>
+                <br>
             </div>
-            <br>
-            <button v-on:click="listAdder=false">Cancel</button>
+            <button id="cancel" v-on:click="listAdder=false">Cancel</button>
         </div>
     </div>
 </template>
@@ -138,11 +140,36 @@ export default {
     z-index: 10;
     width: 100%;
     height: 100%;
-    padding-top: 40vh;
+    padding-top: 30vh;
     background-color: rgba(0, 0, 0, 0.5);
     text-align: center;
 }
-
+.innerlist {
+    overflow-y: scroll;
+    max-height: 250px;
+}
+#list {
+    background-color: rgb(168, 61, 61);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 30px 10px 30px;
+    width: 200px;
+    color: white;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 10px 0 0 5px;
+}
+#cancel {
+    background-color: rgb(139, 139, 139);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 30px 10px 30px;
+    color: rgb(20, 20, 20);
+    cursor: pointer;
+    margin-top: 10px;
+}
 .container {
     /* +180px from left is the sidebar width */
     margin-left: 200px;

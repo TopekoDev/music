@@ -18,7 +18,7 @@
                     <div v-if="!isCued" :style="{ width: (progress/duration)*100 + '%' }" id="mobileProgress-bar"></div>
                     <div v-if="isCued" id="mobilePlaceholder-bar"></div>
                 </div>
-                <MoreVerticalIcon class="mobileCtrlL" id="mobileMore" v-on:click="more"/>
+                <PlusIcon class="mobileCtrlL" id="mobileAdd" v-on:click="addToList(ytInfo)"/>
                 <SkipBackIcon class="mobileCtrlL" id="mobileBack" v-on:click="skipBack"/>
                 <PlayCircleIcon class="mobileCtrlC" style="padding: 0 13px 0 13px" id="mobilePlay" v-if="!isPlaying" v-on:click="playVideo"/>
                 <PauseCircleIcon class="mobileCtrlC" style="padding: 0 13px 0 13px" id="mobilePause" v-if="isPlaying" v-on:click="pauseVideo"/>
@@ -40,7 +40,7 @@
             </div>
             <div class="controls">
                 <youtube width=0 height=0 v-bind:video-id="ytInfo.id.videoId" v-bind:player-vars="playerVars" v-on:cued="cued" v-on:playing="playing" v-on:ended="ended" ref="youtube"></youtube>
-                <MoreVerticalIcon class="ctrlIcon" id="more" v-on:click="more"/>
+                <PlusIcon class="ctrlIcon" id="add" v-on:click="addToList(ytInfo)"/>
                 <SkipBackIcon class="ctrlIcon" id="back" v-on:click="skipBack"/>
                 <PlayCircleIcon class="ctrlIcon" style="padding: 0 13px 0 13px" id="play" v-if="!isPlaying" v-on:click="playVideo"/>
                 <PauseCircleIcon class="ctrlIcon" style="padding: 0 13px 0 13px" id="pause" v-if="isPlaying" v-on:click="pauseVideo"/>
@@ -60,18 +60,28 @@
                 <input v-model="volume" type="range" name="volume" id="volume">
             </div>
         </div>
+        <div class="listAdd" v-if="listAdder">
+            <p style="margin: 0 0 10px 0; padding: 0;">Add to list</p>
+            <div class="innerlist">
+                <div v-for="(object,index) in lists" v-bind:key="index">
+                <button id="list" v-on:click="addVideo(selectedVideo, lists[index].id)">{{ lists[index].name }}</button>
+                </div>
+                <br>
+            </div>
+            <button id="cancel" v-on:click="listAdder=false">Cancel</button>
+        </div>
     </div>
 </template>
 
 <script>
 import { mapMutations, mapState } from 'vuex';
-import { PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, Volume2Icon, VolumeXIcon, YoutubeIcon, PlusIcon, MoreVerticalIcon, RepeatIcon } from 'vue-feather-icons';
+import { PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, Volume2Icon, VolumeXIcon, YoutubeIcon, PlusIcon, RepeatIcon } from 'vue-feather-icons';
 import axios from 'axios';
 
 export default {
     name: "player",
     components: {
-        PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, Volume2Icon, VolumeXIcon, YoutubeIcon, PlusIcon, MoreVerticalIcon, RepeatIcon
+        PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, Volume2Icon, VolumeXIcon, YoutubeIcon, PlusIcon, RepeatIcon
     },
     data() {
         return {
@@ -85,19 +95,36 @@ export default {
             volume: 100,
             onRepeat: false,
             isPlaying: false,
-            isCued: false
+            isCued: false,
+            listAdder: false,
+            selectedVideo: "",
+            lists: []
         }
     },
     methods: {
-        addVideo: async function() {
-            var theVid = this.ytInfo;
-            theVid.date = new Date;
-            const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/add', {
-                method: "post",
-                data: {video: theVid},
+        addToList: function(video) {
+            this.getLists();
+            this.listAdder = true;
+            this.selectedVideo = video;
+        },
+        getLists: async function() {
+            const theUser = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/user', {
+                method: "get",
                 withCredentials: true
             });
-            alert("added to list");
+            this.lists = theUser.data[0].lists;
+        },
+        addVideo: async function(video, theList) {
+            let theVid = video;
+            let theDate = new Date;
+            const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/add', {
+                method: "post",
+                data: {type: 'video' ,list: theList, video: theVid, date: theDate},
+                withCredentials: true
+            });
+            this.listAdder = false;
+            this.selectedVideo = "";
+            console.log(response);
         },
         playVideo: function() {
             if(this.ytInfo.id.videoId!='none') {
@@ -163,9 +190,6 @@ export default {
                 this.onRepeat = false;
             }
         },
-        more: function() {
-
-        },
         skip: function() {
             this.seekVideo(this.duration);
         },
@@ -216,6 +240,44 @@ export default {
 </script>
 
 <style scoped>
+.listAdd {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    padding-top: 30vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+.innerlist {
+    overflow-y: scroll;
+    max-height: 250px;
+}
+#list {
+    background-color: rgb(168, 61, 61);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 30px 10px 30px;
+    width: 200px;
+    color: white;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 10px 0 0 5px;
+}
+#cancel {
+    background-color: rgb(139, 139, 139);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 30px 10px 30px;
+    color: rgb(20, 20, 20);
+    cursor: pointer;
+    margin-top: 10px;
+}
+
 .player {
     position: fixed;
     bottom: 0;
@@ -277,7 +339,7 @@ export default {
     position: relative;
     bottom: 4px;
 }
-#more, #repeat, #repeatO {
+#add, #repeat, #repeatO {
     width: 20px;
     height: 20px;
     color: rgb(204, 204, 204);
@@ -403,7 +465,7 @@ export default {
         padding: 0;
         margin-top: 22px;
     }
-    #back, #forward, #more, #repeat, #repeatO {
+    #back, #forward, #add, #repeat, #repeatO {
         display: none;
     }
     #seekbar {
@@ -525,7 +587,7 @@ export default {
         margin-bottom: -9px;
         cursor: pointer;
     }
-    #mobileMore, #mobileRepeat, #mobileRepeatO {
+    #mobileAdd, #mobileRepeat, #mobileRepeatO {
         height: 25px;
         width: 25px;
         margin: 0 10px 1px 10px;

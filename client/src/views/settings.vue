@@ -59,8 +59,7 @@ export default {
         },
         removeAccount: async function() {
             //confirmation
-            let confirmRemove = confirm("Are you sure?");
-            if(confirmRemove) {
+            if(confirm("Delete Account and all data? Cannot be undone!")) {
                 //logout first
                 this.logout();
                 //send account remove request
