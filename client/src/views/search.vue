@@ -71,6 +71,7 @@ export default {
             this.nextPage = results.nextPageToken;
         },
         setVideo: function(video) {
+            this.SET_LIST("");
             this.SET_VIDEO(video);
         },
         addToList: function(video) {
@@ -98,21 +99,27 @@ export default {
             console.log(response);
         },
         ...mapMutations([
-            'SET_VIDEO'
+            'SET_VIDEO',
+            'SET_LIST'
         ])
     },
     mounted() {
-        if(this.$cookie.get('public_key')) {
-            this.apiKey = process.env.VUE_APP_APIKEY;
-        } else {
-            if(this.$cookie.get('api_key') && this.$cookie.get('api_key')!="") {
-                this.apiKey = this.$cookie.get('api_key');
-            } else {
-                alert("You have to add YouTube API key in the settings!");
-            }
+        switch(this.$cookie.get('public_key')) {
+            case "true":
+                this.apiKey = process.env.VUE_APP_APIKEY;
+                break;
+            case "false": default:
+                if(this.$cookie.get('api_key') && this.$cookie.get('api_key')!="") {
+                    this.apiKey = this.$cookie.get('api_key');
+                } else {
+                    alert("You have to add YouTube API key in the settings!");
+                }
+                break;
         }
         this.searchTerm = this.$route.query.q;
-        this.search();
+        if(this.searchTerm != "") {
+            this.search();
+        }
     },
     watch: {
         $route() {

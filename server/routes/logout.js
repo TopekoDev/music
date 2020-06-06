@@ -13,7 +13,7 @@ router.get("/", (req, res) => {
   res.cookie('loggedin', "", { expires: new Date(), domain: CLIENT_DOMAIN });
   res.cookie('api_key', "", { expires: new Date(), domain: CLIENT_DOMAIN });
   res.cookie('public_key', "", { expires: new Date(), domain: CLIENT_DOMAIN });
-  res.cookie('log_history', "", { expires: new Date(), domain: CLIENT_DOMAIN });
+  res.cookie('volume', "", { expires: new Date(), domain: CLIENT_DOMAIN });
   //return details
   return res.json({"msg":"Logged out"});
 });

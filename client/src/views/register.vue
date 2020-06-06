@@ -9,7 +9,8 @@
         <br/>
         <input class="inField" autocomplete="off" name="password2" type="password" placeholder="confirm password" v-model="password2" />
         <br/>
-        <button :disabled="regDisabled == true">Register</button>
+        <button type="button" id="back" v-on:click="$router.push('/')">Back</button>
+        <button type="submit" id="register" :disabled="regDisabled">Register</button>
       </form>
       <p style="opacity: 0;" v-if="message==''">blank</p>
       <p>{{ message }}</p>
@@ -92,15 +93,23 @@ export default {
     margin-bottom: 5px;
     border-radius: 2px;
 }
-button {
+#register {
     background-color: rgb(168, 61, 61);
     border: none;
     border-radius: 10px;
-    margin: 10px 0 0 0;
+    margin: 10px 0 0 28px;
     padding: 10px 30px 10px 30px;
     color: white;
 }
-button:hover {
+#back {
+    background-color: rgb(25, 25, 25);
+    border: none;
+    border-radius: 10px;
+    margin: 10px 28px 0 0;
+    padding: 10px 30px 10px 30px;
+    color: rgb(139, 139, 139);
+}
+button {
     cursor: pointer;
 }
 </style>

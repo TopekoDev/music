@@ -5,10 +5,9 @@
             <div class="menuItems">
                 <ul>
                     <li v-on:click="navigate('home')"><HomeIcon class="icons"/>Home</li>
-                    <!-- <li v-on:click="navigate('user?u=' + 'test')"><UserIcon class="icons"/>Profile</li> -->
                     <li v-on:click="navigate('settings')"><SettingsIcon class="icons"/>Settings</li>
                     <br>
-                    <div class="listItems">
+                    <div class="listItems" v-if="loggedIn">
                         <li v-on:click="navigate('list?l=' + lists[index].id)" v-for="(object,index) in lists" v-bind:key="index" ><ListIcon class="lists"/><p class="listsTxt">{{ lists[index].name }}</p></li>
                         <li v-on:click="listCreator = true"><PlusIcon class="icons"/>New List</li>
                     </div>
@@ -27,19 +26,20 @@
 </template>
 
 <script>
-import { HomeIcon, /*UserIcon,*/ SettingsIcon, ListIcon, PlusIcon } from 'vue-feather-icons';
+import { HomeIcon, SettingsIcon, ListIcon, PlusIcon } from 'vue-feather-icons';
 import axios from 'axios';
 
 export default {
     name: "sidebar",
     components: {
-        HomeIcon, /*UserIcon,*/ SettingsIcon, ListIcon, PlusIcon
+        HomeIcon, SettingsIcon, ListIcon, PlusIcon
     },
     data() {
         return {
             lists: [],
             listName: "",
-            listCreator: false
+            listCreator: false,
+            loggedIn: false
         }
     },
     methods: {
@@ -69,11 +69,18 @@ export default {
     },
     watch: {
         $route() {
-            this.getLists();
+            if(this.loggedIn) {
+                this.getLists();
+            }
         }
     },
     mounted() {
-        this.getLists();
+        if(this.$cookie.get('loggedin') == "true") {
+            this.loggedIn = true;
+            this.getLists();
+        } else {
+            this.loggedIn = false;
+        }
     }
 }
 </script>

@@ -10,12 +10,14 @@
         <label for="pkc" style="color: white;">Use our API key instead</label>
         <p style="color: grey; font-size: 13px;">The key has limited uses and might not always work!</p>
         <br>
-        <h2>Privacy</h2>
-        <button style="margin-top: 5px;" id="dataBtn" v-on:click="viewData">View your data</button>
-        <br><br>
-        <h2>Account</h2>
-        <button id="logoutBtn" v-on:click="logout">Logout</button><br>
-        <button style="margin-top: 5px;" id="removeAccBtn" v-on:click="removeAccount">Remove account and data</button>
+        <div v-if="loggedIn">
+            <h2>Privacy</h2>
+            <button style="margin-top: 5px;" id="dataBtn" v-on:click="viewData">View your data</button>
+            <br><br>
+            <h2>Account</h2>
+            <button id="logoutBtn" v-on:click="logout">Logout</button><br>
+            <button style="margin-top: 5px;" id="removeAccBtn" v-on:click="removeAccount">Remove account and data</button>
+        </div>
     </div>
 </template>
 
@@ -28,6 +30,7 @@ export default {
         return {
             apiKey: "",
             publicKey: Boolean,
+            loggedIn: false
         }
     },
     methods: {
@@ -35,15 +38,13 @@ export default {
             this.$cookie.set('api_key', this.apiKey, { expires: '2Y' });
         },
         publicKeyBox: function() {
-            if(this.$cookie.get('public_key')) {
-                this.$cookie.delete('public_key');
-            } else {
-                this.$cookie.set('public_key', "true", { expires: '2Y' });
-            }
-            if(this.$cookie.get('public_key')) {
-                this.publicKey = true;
-            } else {
-                this.publicKey = false;
+            switch(this.$cookie.get('public_key')) {
+                case "true":
+                    this.$cookie.set('public_key', "false", { expires: '2Y' });
+                    break;
+                case "false": default:
+                    this.$cookie.set('public_key', "true", { expires: '2Y' });
+                    break;
             }
         },
         viewData: function() {
@@ -72,13 +73,22 @@ export default {
         }
     },
     mounted() {
+        if(this.$cookie.get('loggedin') == "true") {
+            this.loggedIn = true;
+        } else {
+            this.loggedIn = false;
+        }
+
         if(this.$cookie.get('api_key')) {
             this.apiKey = this.$cookie.get('api_key');
         }
-        if(this.$cookie.get('public_key')) {
-            this.publicKey = true;
-        } else {
-            this.publicKey = false;
+        switch(this.$cookie.get('public_key')) {
+            case "true":
+                this.publicKey = true;
+                break;
+            case "false": default:
+                this.publicKey = false;
+                break;
         }
     }
 }

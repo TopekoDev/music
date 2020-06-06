@@ -6,8 +6,8 @@
                 <p>Opensource YouTube powered music player.</p>
             </div>
             <div class="buttons">
-                <button v-on:click="register">Create account</button><br>
                 <button v-on:click="login">Login</button><br>
+                <button v-on:click="register">Create account</button><br>
                 <button id="noaccBtn" v-on:click="home">Use without account</button><br>
             </div>
             <div class="links">

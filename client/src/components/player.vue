@@ -1,5 +1,6 @@
 <template>
     <div>
+        <!-- This is a messs.. -->
         <div id="morePanel" style="bottom: -100%;">
             <div class="closeArea" v-on:click="viewMore">
                 <ChevronDownIcon id="closeMoreIcon"/>
@@ -127,25 +128,25 @@ export default {
             console.log(response);
         },
         playVideo: function() {
-            if(this.ytInfo.id.videoId!='none') {
+            if(this.ytInfo.id.videoId != 'none') {
                 this.$refs.youtube.player.playVideo();
                 this.isPlaying = true;
             }
         },
         pauseVideo: function() {
-            if(this.ytInfo.id.videoId!=='none') {
+            if(this.ytInfo.id.videoId != 'none') {
                 this.$refs.youtube.player.pauseVideo();
                 this.isPlaying = false;
             }
         },
         stopVideo: function() {
-            if(this.ytInfo.id.videoId!='none') {
+            if(this.ytInfo.id.videoId != 'none') {
                 this.$refs.youtube.player.stopVideo();
                 this.isPlaying = false;
             }
         },
         updateVideo: async function() {
-            if(this.ytInfo.id.videoId!='none') {
+            if(this.ytInfo.id.videoId != 'none') {
                 this.progress = await this.$refs.youtube.player.getCurrentTime();
                 this.duration = await this.$refs.youtube.player.getDuration();
                 this.$refs.youtube.player.setVolume(this.volume);
@@ -177,7 +178,7 @@ export default {
             this.playVideo();
         },
         barSeek: function(event) {
-            if(window.innerWidth <= '500') {
+            if(window.innerWidth <= '500' && document.getElementById('morePanel').style.bottom == '0px') {
                 this.seekVideo(((event.offsetX)/(document.getElementById('mobileSeekbar').offsetWidth))*this.duration);
             } else if(window.innerWidth > '500') {
                 this.seekVideo(((event.offsetX)/(document.getElementById('seekbar').offsetWidth))*this.duration);
@@ -235,11 +236,20 @@ export default {
     },
     mounted() {
         setInterval(this.updateVideo,250);
+        if(this.$cookie.get('volume')) {
+            this.volume = this.$cookie.get('volume');
+        }
+    },
+    watch: {
+        volume() {
+            this.$cookie.set('volume', this.volume, { expires: '2Y' });
+        }
     }
 }
 </script>
 
 <style scoped>
+/* This is a mess.. */
 .listAdd {
     position: fixed;
     top: 0;

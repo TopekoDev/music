@@ -34,8 +34,8 @@ export default {
     },
     methods: {
         playList: function(index) {
-            this.SET_VIDEO(this.songs[index].video);
             this.SET_LIST(this.listId);
+            this.SET_VIDEO(this.songs[index].video);
             for(let i = index-1; i >= 0; i--) {
                 this.HISTORY_VIDEO(this.songs[i].video);
             }

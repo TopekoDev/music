@@ -21,7 +21,9 @@ export default {
     },
     methods: {
         search: function() {
-            this.$router.push('/search?q=' + this.searchField);
+            if(this.searchField != "") {
+                this.$router.push('/search?q=' + this.searchField);
+            }
         }
     }
 }

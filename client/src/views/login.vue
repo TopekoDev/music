@@ -7,7 +7,8 @@
         <br/>
         <input class="inField" autocomplete="off" name="password" type="password" placeholder="password" v-model="password" />
         <br/>
-        <button :disabled="logDisabled == true">Login</button>
+        <button type="button" id="back" v-on:click="$router.push('/')">Back</button>
+        <button type="submit" id="login" :disabled="logDisabled">Login</button>
         <p style="opacity: 0;" v-if="message==''">blank</p>
         <p>{{ message }}</p>
       </form>
@@ -80,15 +81,23 @@ export default {
     margin-bottom: 5px;
     border-radius: 2px;
 }
-button {
+#login {
     background-color: rgb(168, 61, 61);
     border: none;
     border-radius: 10px;
-    margin: 10px 0 0 0;
+    margin: 10px 0 0 36px;
     padding: 10px 30px 10px 30px;
     color: white;
 }
-button:hover {
+#back {
+    background-color: rgb(25, 25, 25);
+    border: none;
+    border-radius: 10px;
+    margin: 10px 36px 0 0;
+    padding: 10px 30px 10px 30px;
+    color: rgb(139, 139, 139);
+}
+button {
     cursor: pointer;
 }
 </style>

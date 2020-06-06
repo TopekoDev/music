@@ -2,7 +2,7 @@
     <div class="container">
         <div v-if="!loggedIn" class="login">
             <p>If you want to add songs to a playlist <a href="/login">Login</a> or <a href="/register">Create account</a>.</p>
-            <p>You can search and play music normally without an account :)</p>
+            <p>You can still play music without an account :)</p>
         </div>
         <div v-if="loggedIn">
             <p>Your lists:</p>
@@ -71,12 +71,12 @@ export default {
         ])
     },
     mounted() {
-        if(this.$cookie.get('loggedin')=="true") {
+        if(this.$cookie.get('loggedin') == "true") {
             this.loggedIn = true;
+            this.getLists();
         } else {
             this.loggedIn = false;
         }
-        this.getLists();
     }
 }
 </script>
