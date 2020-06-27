@@ -1,18 +1,19 @@
 <template>
     <div class="navbar">
         <div class="search">
-            <input v-on:keyup.enter="search" class="searchBar" v-model="searchField" placeholder="Search from YouTube.." type="text">
-            <button class="searchBtn" v-on:click="search">Search</button>
+            <input v-on:keyup.enter="search" class="searchBar" v-model="searchField" placeholder="Search from YouTube..." type="text">
+            <button class="searchBtn" v-on:click="search"><SearchIcon class="icons"/></button>
         </div>
     </div>
 </template>
 
 <script>
+import { SearchIcon } from 'vue-feather-icons';
 
 export default {
     name: "navbar",
     components: {
-        
+        SearchIcon
     },
     data() {
         return {
@@ -45,6 +46,13 @@ export default {
     margin: auto;
 
 }
+
+.icons {
+    width: 18px;
+    height: 18px;
+    margin-bottom: -3px;
+}
+
 .searchBar {
     background-color:rgb(15, 15, 15);
     font-size: 15px;
@@ -62,7 +70,7 @@ export default {
     color: white;
     border-radius: 0 10px 10px 0;
     cursor: pointer;
-    padding-right: 10px;
+    padding: 0 13px 0 10px;
 }
 @media (max-width: 860px) {
     .navbar {

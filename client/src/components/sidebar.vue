@@ -15,11 +15,13 @@
             </div>
         </div>
         <div class="newList" v-if="listCreator">
-            <div class="createList">
-                <input id="field" class="inField" v-on:keyup.enter="createList" autocomplete="off" name="name" type="text" placeholder="List name" v-model="listName" />
-                <br/><br>
-                <button id="create" v-on:click="createList">Create</button>
-                <button id="cancel" v-on:click="listCreator=false; listName=''">Cancel</button>
+            <div id="createListBG">
+                <div class="createList">
+                    <input id="field" class="inField" v-on:keyup.enter="createList" autocomplete="off" name="name" type="text" placeholder="Enter list name..." v-model="listName" />
+                    <br/><br>
+                    <button id="create" v-on:click="createList">Create</button>
+                    <button id="cancel" v-on:click="listCreator=false; listName=''">Cancel</button>
+                </div>
             </div>
         </div>
     </div>
@@ -49,6 +51,9 @@ export default {
                 withCredentials: true
             });
             this.lists = theUser.data[0].lists;
+            this.lists.sort(function(a, b) { 
+                return a.name > b.name ? 1 : -1;
+            });
         },
         createList: async function() {
             if(this.listName.length > 0) {
@@ -107,25 +112,34 @@ export default {
     margin-right: 12px;
 }
 .newList #cancel {
-    background-color: rgb(139, 139, 139);
-    border: none;
-    border-radius: 10px;
     padding: 10px 30px 10px 30px;
-    color: rgb(20, 20, 20);
     cursor: pointer;
     margin-left: 12px;
+    background-color: rgb(25, 25, 25);
+    border: none;
+    border-radius: 10px;
+    color: rgb(139, 139, 139);
 }
 .newList #field {
-    background-color:rgb(255, 255, 255);
+    background-color:rgb(30, 30, 30);
     font-size: 15px;
     border: none;
-    color: rgb(0, 0, 0);
+    color: rgb(212, 212, 212);
     height: 35px;
     width: 225px;
     flex: 1;
     padding: 0 5px 0 5px;
     border-radius: 2px;
 }
+.newList #createListBG {
+    background-color: rgb(30, 30, 30);
+    width: 300px;
+    height: auto;
+    padding: 20px;
+    margin: auto;
+    border-radius: 10px;
+}
+
 
 .sidebar {
     background-color: rgba(30, 30, 30);

@@ -7,7 +7,7 @@
         <button id="keySubmit" v-on:click="submitKey">Submit</button>
         <p class="links"><a target="_blank" href="https://developers.google.com/youtube/v3/getting-started">Instructions</a></p>
         <input v-model="publicKey" v-on:click="publicKeyBox" type="checkbox" name="" id="pkc">
-        <label for="pkc" style="color: white;">Use our API key instead</label>
+        <label for="pkc" style="color: white;">Use public key instead</label>
         <p style="color: grey; font-size: 13px;">The key has limited uses and might not always work!</p>
         <br>
         <div v-if="loggedIn">

@@ -10,14 +10,16 @@
             <button v-if="searchResults.length > 0" class="loadBtn" v-on:click="loadMore">Load more</button>
         </div>
         <div class="listAdd" v-if="listAdder">
-            <p style="margin: 0 0 10px 0; padding: 0;">Add to list</p>
-            <div class="innerlist">
-                <div v-for="(object,index) in lists" v-bind:key="index">
-                <button id="list" v-on:click="addVideo(selectedVideo, lists[index].id)">{{ lists[index].name }}</button>
+            <div id="listAddBG">
+                <p style="margin: 0 0 10px 0; padding: 0;">Add to list</p>
+                <div class="innerlist">
+                    <div v-for="(object,index) in lists" v-bind:key="index">
+                    <button id="list" v-on:click="addVideo(selectedVideo, lists[index].id)">{{ lists[index].name }}</button>
+                    </div>
+                    <br>
                 </div>
-                <br>
+                <button id="cancel" v-on:click="listAdder=false">Cancel</button>
             </div>
-            <button id="cancel" v-on:click="listAdder=false">Cancel</button>
         </div>
     </div>
 </template>
@@ -71,6 +73,10 @@ export default {
             this.nextPage = results.nextPageToken;
         },
         setVideo: function(video) {
+            if(this.shuffle) {
+                this.CLEAR_VIDEO();
+                this.SET_SHUFFLE(false);
+            }
             this.SET_LIST("");
             this.SET_VIDEO(video);
         },
@@ -88,10 +94,9 @@ export default {
         },
         addVideo: async function(video, theList) {
             let theVid = video;
-            let theDate = new Date;
             const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/add', {
                 method: "post",
-                data: {type: 'video' ,list: theList, video: theVid, date: theDate},
+                data: {type: 'video' ,list: theList, video: theVid},
                 withCredentials: true
             });
             this.listAdder = false;
@@ -112,7 +117,7 @@ export default {
                 if(this.$cookie.get('api_key') && this.$cookie.get('api_key')!="") {
                     this.apiKey = this.$cookie.get('api_key');
                 } else {
-                    alert("You have to add YouTube API key in the settings!");
+                    alert("You need to setup YouTube API key from the settings!");
                 }
                 break;
         }
@@ -153,7 +158,21 @@ export default {
 }
 .innerlist {
     overflow-y: scroll;
-    max-height: 250px;
+    max-height: 220px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.innerlist::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+#listAddBG {
+    background-color: rgb(30, 30, 30);
+    width: 300px;
+    height: auto;
+    padding: 20px;
+    margin: auto;
+    border-radius: 10px;
 }
 #list {
     background-color: rgb(168, 61, 61);
@@ -169,13 +188,13 @@ export default {
     margin: 10px 0 0 5px;
 }
 #cancel {
-    background-color: rgb(139, 139, 139);
-    border: none;
-    border-radius: 10px;
     padding: 10px 30px 10px 30px;
-    color: rgb(20, 20, 20);
     cursor: pointer;
     margin-top: 10px;
+    background-color: rgb(25, 25, 25);
+    border: none;
+    border-radius: 10px;
+    color: rgb(139, 139, 139);
 }
 .container {
     /* +180px from left is the sidebar width */

@@ -3,27 +3,35 @@
         <p id="listName">{{ listName }}</p>
         <p id="listInfo">{{ songs.length }} songs</p>
         <button id="listPlay" v-on:click="playList(0)">Play</button>
-        <button id="listRemove" v-on:click="removeList()">Delete</button>
+        <button id="listShuffle" v-on:click="shuffleList()"><ShuffleIcon class="icons"/></button>
+        <button id="listEdit" v-on:click="editList()"><Edit2Icon class="icons"/></button>
         <div class="results">
             <div class="result" v-on:click="playList(index)" v-for="(object,index) in songs" v-bind:key="index">
                 <img class="image" v-bind:src="songs[index].video.snippet.thumbnails.default.url">
                 <button class="nBtn">{{ index+1 }}</button>
-                <button v-on:click.stop v-on:click="removeVideo(songs[index].date)" class="oBtn">-</button>
-                <p v-if="index != songs.length - queue.length - 1 || list != listId" class="title">{{ songs[index].video.snippet.title }}</p>
-                <p v-if="index == songs.length - queue.length - 1 && list == listId" class="title" style="color: rgb(168, 61, 61);">{{ songs[index].video.snippet.title }}</p>
+                <div v-if="!shuffle">
+                    <p v-if="index != songs.length - queue.length - 1 || list != listId" class="title">{{ songs[index].video.snippet.title }}</p>
+                    <p v-if="index == songs.length - queue.length - 1 && list == listId" class="title" style="color: rgb(168, 61, 61);">{{ songs[index].video.snippet.title }}</p>
+                </div>
+                <div v-if="shuffle">
+                    <p v-if="index != shuffledList[shuffledList.length - queue.length -1 ].order -1 || list != listId" class="title">{{ songs[index].video.snippet.title }}</p>
+                    <p v-if="index == shuffledList[shuffledList.length - queue.length -1].order -1 && list == listId" class="title" style="color: rgb(168, 61, 61);">{{ songs[index].video.snippet.title }}</p>
+                </div>
             </div>
         </div>
+        <p v-if="shuffle" id="shuffleText">Shuffling...</p>
     </div>
 </template>
 
 <script>
 import axios from 'axios';
 import { mapMutations, mapState } from 'vuex';
+import { ShuffleIcon, Edit2Icon } from 'vue-feather-icons';
 
 export default {
     name: "list",
     components: {
-        
+        ShuffleIcon, Edit2Icon
     },
     data() {
         return {
@@ -34,6 +42,10 @@ export default {
     },
     methods: {
         playList: function(index) {
+            if(this.shuffle) {
+                this.CLEAR_VIDEO();
+                this.SET_SHUFFLE(false);
+            }
             this.SET_LIST(this.listId);
             this.SET_VIDEO(this.songs[index].video);
             for(let i = index-1; i >= 0; i--) {
@@ -43,19 +55,31 @@ export default {
                 this.QUEUE_VIDEO(this.songs[i].video);
             }
         },
+        shuffleList: function() {
+            this.CLEAR_VIDEO();
+            var shuffledSongs = this.songs.slice().sort(() => Math.random() - 0.5);
+            this.SET_SHUFFLE(true);
+            this.SET_SHUFFLE_LIST(shuffledSongs);
+            this.SET_LIST(this.listId);
+            this.SET_VIDEO(shuffledSongs[0].video);
+            for(let i = shuffledSongs.length-1; i > 0; i--) {
+                this.QUEUE_VIDEO(shuffledSongs[i].video);
+            }
+        },
         getVideos: async function() {
             const theUser = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/user', {
                 method: "get",
                 withCredentials: true
             });
             this.songs = theUser.data[0].added_videos.filter(x => x.list === this.listId);
+            this.songs.sort((a, b) => a.order - b.order);
             this.listName = theUser.data[0].lists.filter(x => x.id === this.listId)[0].name;
         },
-        removeVideo: async function(addDate) {
+        removeVideo: async function(theOrder) {
             if(confirm("Remove From List? Cannot be undone!")) {
                 const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/remove', {
                     method: "post",
-                    data: {type: 'video', date: addDate},
+                    data: {type: 'video', order: theOrder},
                     withCredentials: true
                 });
                 console.log(response);
@@ -73,11 +97,17 @@ export default {
                 this.$router.push('/home');
             }
         },
+        editList: function() {
+            this.$router.push('/edit?l=' + this.listId);
+        },
         ...mapMutations([
             'SET_VIDEO',
             'QUEUE_VIDEO',
             'HISTORY_VIDEO',
-            'SET_LIST'
+            'SET_LIST',
+            'SET_SHUFFLE',
+            'SET_SHUFFLE_LIST',
+            'CLEAR_VIDEO'
         ])
     },
     computed: {
@@ -85,7 +115,9 @@ export default {
             'ytInfo',
             'queue',
             'history',
-            'list'
+            'list',
+            'shuffle',
+            'shuffledList'
         ])
     },
     mounted() {
@@ -102,6 +134,10 @@ export default {
 </script>
 
 <style scoped>
+#shuffleText {
+    margin-top: -120px;
+    color: rgb(139, 139, 139);
+}
 #listName {
     font-size: 30px;
     margin: 0;
@@ -118,19 +154,34 @@ export default {
     border-radius: 10px;
     padding: 10px 30px 10px 30px;
     color: white;
-    margin: 20px 15px 10px 0;
+    margin: 20px 5px 10px 0;
     cursor: pointer;
 }
-#listRemove {
-    background-color: rgb(25, 25, 25);
+#listShuffle {
+    background-color: rgb(168, 61, 61);
     border: none;
     border-radius: 10px;
-    padding: 10px 30px 10px 30px;
-    color: rgb(139, 139, 139);
+    padding: 10px 20px 10px 20px;
+    color: white;
+    margin: 20px 5px 10px 0;
     cursor: pointer;
 }
+#listEdit {
+    background-color: rgb(73, 73, 73);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px 10px 20px;
+    color: white;
+    margin: 20px 5px 10px 0;
+    cursor: pointer;
+}
+.icons {
+    width: 16px;
+    height: 16px;
+    margin-bottom: -3px;
+}
 .results {
-    
+    padding-bottom: 120px;
 }
 .result {
     background-color: rgb(20, 20, 20);
@@ -163,25 +214,11 @@ export default {
     height: 100%;
     min-width: 40px;
     font-size: 13px;
+    cursor: pointer;
 }
 .result:hover .nBtn {
-    display: none;
-}
-.result:hover .oBtn {
-    display: block;
-}
-.oBtn {
-    background-color: rgb(25, 25, 25);
-    border: none;
-    color: rgb(196, 196, 196);
-    height: 100%;
-    min-width: 40px;
-    font-size: 18px;
-    cursor: pointer;
-    display: none;
-}
-.oBtn:hover {
     color: white;
+    background-color: rgb(25, 25, 25);
 }
 .container {
     /* +180px from left is the sidebar width */
@@ -200,12 +237,8 @@ export default {
     .nBtn {
         display: none;
     }
-    .oBtn {
-        display: block;
-        background-color: rgb(20, 20, 20);
-    }
-    .result:hover .oBtn {
-        background-color: rgb(25, 25, 25);
+    .title {
+        margin-left: 10px;
     }
 }
 </style>

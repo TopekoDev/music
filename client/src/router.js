@@ -8,6 +8,7 @@ import register from './views/register';
 import login from './views/login';
 import settings from './views/settings'
 import list from './views/list';
+import listeditor from './views/listeditor';
 
 Vue.use(Router);
 
@@ -41,6 +42,10 @@ export default new Router({
         {
             path: '/list',
             component: list
+        },
+        {
+            path: '/edit',
+            component: listeditor
         }
     ]
 });

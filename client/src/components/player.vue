@@ -1,20 +1,20 @@
 <template>
     <div>
         <!-- This is a messs.. -->
-        <div id="morePanel" style="bottom: -100%;">
+        <div id="mobileExpanded" style="bottom: -100%;">
             <div class="closeArea" v-on:click="viewMore">
                 <ChevronDownIcon id="closeMoreIcon"/>
                 <p id="closeMoreTitle">Close</p>
             </div>
-            <div class="infoArea">
-                <img v-if="ytInfo.snippet.thumbnails.medium.url == 'none'" class="moreImg" src="../assets/medium-img.png" alt="">
-                <img v-if="ytInfo.snippet.thumbnails.medium.url != 'none'" class="moreImg" v-bind:src="ytInfo.snippet.thumbnails.medium.url">
+            <div class="mobileInfo">
+                <img v-if="ytInfo.snippet.thumbnails.medium.url == 'none'" class="mobileImg" src="../assets/medium-img.png" alt="">
+                <img v-if="ytInfo.snippet.thumbnails.medium.url != 'none'" class="mobileImg" v-bind:src="ytInfo.snippet.thumbnails.medium.url">
                 <p id="mobileTitle">{{ ytInfo.snippet.title }}</p>
             </div>
-            <div class="controlArea">
+            <div class="mobileControl">
                 <div v-on:click="barSeek" id="mobileSeekbar">
-                    <p class="mobileProgress">{{ Math.round(Math.floor(this.progress / 60))+':'+Math.round(this.progress-(Math.floor(this.progress / 60)*60)) }}</p>
-                    <p class="mobileDuration">{{ Math.round(Math.floor(this.duration / 60))+':'+Math.round(this.duration-(Math.floor(this.duration / 60)*60)) }}</p>
+                    <p class="mobileProgress">{{ Math.round(Math.floor(this.progress / 60))+':'+('0'+Math.round(this.progress-(Math.floor(this.progress / 60)*60))).slice(-2) }}</p>
+                    <p class="mobileDuration">{{ Math.round(Math.floor(this.duration / 60))+':'+('0'+Math.round(this.duration-(Math.floor(this.duration / 60)*60))).slice(-2) }}</p>
                     <div v-if="!isCued" id="mobileBar-bg"></div>
                     <div v-if="!isCued" :style="{ width: (progress/duration)*100 + '%' }" id="mobileProgress-bar"></div>
                     <div v-if="isCued" id="mobilePlaceholder-bar"></div>
@@ -26,21 +26,19 @@
                 <SkipForwardIcon class="mobileCtrlR" id="mobileSeekF" v-on:click="skip"/>
                 <RepeatIcon v-if="!onRepeat" v-on:click="repeat" class="mobileCtrlR" id="mobileRepeat"/>
                 <RepeatIcon v-if="onRepeat" v-on:click="repeat" class="mobileCtrlR" id="mobileRepeatO"/>
-                <div class="mobileModifiers">
-                    <VolumeXIcon id="mobileVolumeIcon" v-on:click="volume=0"/>
-                    <input v-model="volume" type="range" name="volume" id="mobileVolume">
-                    <Volume2Icon id="mobileVolumeIcon2" v-on:click="volume=100"/>
-                </div>
             </div>
         </div>
+
         <div class="player" v-on:click="viewMore">
             <div class="info">
+                <img v-if="ytInfo.snippet.thumbnails.medium.url == 'none'" class="img" src="../assets/medium-img.png" alt="">
+                <img v-if="ytInfo.snippet.thumbnails.medium.url != 'none'" class="img" v-bind:src="ytInfo.snippet.thumbnails.medium.url">
                 <ChevronUpIcon id="moreIcon"/>
                 <p class="title">{{ ytInfo.snippet.title }}</p>
                 <YoutubeIcon style="padding-right: 10px" class="infoBtn" v-on:click="openYt"/>
             </div>
             <div class="controls">
-                <youtube width=0 height=0 v-bind:video-id="ytInfo.id.videoId" v-bind:player-vars="playerVars" v-on:cued="cued" v-on:playing="playing" v-on:ended="ended" ref="youtube"></youtube>
+                <youtube style="display: none" width=0 height=0 v-bind:video-id="ytInfo.id.videoId" v-bind:player-vars="playerVars" v-on:cued="cued" v-on:playing="playing" v-on:ended="ended" ref="youtube"></youtube>
                 <PlusIcon class="ctrlIcon" id="add" v-on:click="addToList(ytInfo)"/>
                 <SkipBackIcon class="ctrlIcon" id="back" v-on:click="skipBack"/>
                 <PlayCircleIcon class="ctrlIcon" style="padding: 0 13px 0 13px" id="play" v-if="!isPlaying" v-on:click="playVideo"/>
@@ -49,8 +47,8 @@
                 <RepeatIcon v-if="!onRepeat" class="ctrlIcon" id="repeat" v-on:click="repeat"/>
                 <RepeatIcon v-if="onRepeat" class="ctrlIcon" id="repeatO" v-on:click="repeat"/>
                 <div v-on:click="barSeek" id="seekbar">
-                    <p class="progress">{{ Math.round(Math.floor(this.progress / 60))+':'+Math.round(this.progress-(Math.floor(this.progress / 60)*60)) }}</p>
-                    <p class="duration">{{ Math.round(Math.floor(this.duration / 60))+':'+Math.round(this.duration-(Math.floor(this.duration / 60)*60)) }}</p>
+                    <p class="progress">{{ Math.round(Math.floor(this.progress / 60))+':'+('0'+Math.round(this.progress-(Math.floor(this.progress / 60)*60))).slice(-2) }}</p>
+                    <p class="duration">{{ Math.round(Math.floor(this.duration / 60))+':'+('0'+Math.round(this.duration-(Math.floor(this.duration / 60)*60))).slice(-2) }}</p>
                     <div v-if="!isCued" id="bar-bg"></div>
                     <div v-if="!isCued" :style="{ width: (progress/duration)*100 + '%' }" id="progress-bar"></div>
                     <div v-if="isCued" id="placeholder-bar"></div>
@@ -61,28 +59,31 @@
                 <input v-model="volume" type="range" name="volume" id="volume">
             </div>
         </div>
+
         <div class="listAdd" v-if="listAdder">
-            <p style="margin: 0 0 10px 0; padding: 0;">Add to list</p>
-            <div class="innerlist">
-                <div v-for="(object,index) in lists" v-bind:key="index">
-                <button id="list" v-on:click="addVideo(selectedVideo, lists[index].id)">{{ lists[index].name }}</button>
+            <div id="listAddBG">
+                <p style="margin: 0 0 10px 0; padding: 0;">Add to list</p>
+                <div class="innerlist">
+                    <div v-for="(object,index) in lists" v-bind:key="index">
+                    <button id="list" v-on:click="addVideo(selectedVideo, lists[index].id)">{{ lists[index].name }}</button>
+                    </div>
+                    <br>
                 </div>
-                <br>
+                <button id="cancel" v-on:click="listAdder=false">Cancel</button>
             </div>
-            <button id="cancel" v-on:click="listAdder=false">Cancel</button>
         </div>
     </div>
 </template>
 
 <script>
 import { mapMutations, mapState } from 'vuex';
-import { PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, Volume2Icon, VolumeXIcon, YoutubeIcon, PlusIcon, RepeatIcon } from 'vue-feather-icons';
+import { PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, /*Volume2Icon, VolumeXIcon,*/ YoutubeIcon, PlusIcon, RepeatIcon } from 'vue-feather-icons';
 import axios from 'axios';
 
 export default {
     name: "player",
     components: {
-        PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, Volume2Icon, VolumeXIcon, YoutubeIcon, PlusIcon, RepeatIcon
+        PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, /*Volume2Icon, VolumeXIcon,*/ YoutubeIcon, PlusIcon, RepeatIcon
     },
     data() {
         return {
@@ -93,7 +94,7 @@ export default {
             },
             progress: 0,
             duration: 0.1,
-            volume: 100,
+            volume: 50,
             onRepeat: false,
             isPlaying: false,
             isCued: false,
@@ -117,10 +118,9 @@ export default {
         },
         addVideo: async function(video, theList) {
             let theVid = video;
-            let theDate = new Date;
             const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/add', {
                 method: "post",
-                data: {type: 'video' ,list: theList, video: theVid, date: theDate},
+                data: {type: 'video' ,list: theList, video: theVid},
                 withCredentials: true
             });
             this.listAdder = false;
@@ -164,12 +164,26 @@ export default {
             } else {
                 if(this.queue.length > 0) {
                     if(this.queue[0].id.videoId == this.ytInfo.id.videoId) {
+                        this.seekVideo(0);
                         this.playVideo();
                     }
                     this.NEXT_VIDEO();
                 } else {
-                    this.pauseVideo();
-                    this.seekVideo(0);
+                    if(this.shuffle) {
+                        this.SET_SHUFFLE_LIST(this.shuffledList.slice().sort(() => Math.random() - 0.5));
+                        this.SET_VIDEO(this.shuffledList[0].video);
+                        for(let i = this.shuffledList.length-1; i > 0; i--) {
+                            this.QUEUE_VIDEO(this.shuffledList[i].video);
+                        }
+                        this.playVideo();
+                    } else {
+                        if(this.history.length >= 0) {
+                            this.CLEAR_VIDEO();
+                        } else {
+                            this.pauseVideo();
+                            this.seekVideo(0);
+                        }
+                    }
                 }
             }  
         },
@@ -178,7 +192,7 @@ export default {
             this.playVideo();
         },
         barSeek: function(event) {
-            if(window.innerWidth <= '500' && document.getElementById('morePanel').style.bottom == '0px') {
+            if(window.innerWidth <= '500' && document.getElementById('mobileExpanded').style.bottom == '0px') {
                 this.seekVideo(((event.offsetX)/(document.getElementById('mobileSeekbar').offsetWidth))*this.duration);
             } else if(window.innerWidth > '500') {
                 this.seekVideo(((event.offsetX)/(document.getElementById('seekbar').offsetWidth))*this.duration);
@@ -212,26 +226,32 @@ export default {
             if(window.innerWidth <= '500') {
                 var tag = event.target.tagName;
                 if(tag!='svg' && tag!='polygon' && tag!='circle' && tag!='line') {
-                    if(document.getElementById('morePanel').style.bottom == '-100%') {
-                        document.getElementById('morePanel').style.bottom = '0';
+                    if(document.getElementById('mobileExpanded').style.bottom == '-100%') {
+                        document.getElementById('mobileExpanded').style.bottom = '0';
                     } else {
-                        document.getElementById('morePanel').style.bottom = '-100%';
+                        document.getElementById('mobileExpanded').style.bottom = '-100%';
                     }
                 }
             }
         },
         ...mapMutations([
             'SET_VIDEO',
+            'SET_LIST',
             'NEXT_VIDEO',
             'QUEUE_VIDEO',
-            'PREVIOUS_VIDEO'
+            'PREVIOUS_VIDEO',
+            'CLEAR_VIDEO',
+            'SET_SHUFFLE',
+            'SET_SHUFFLE_LIST'
         ])
     },
     computed: {
         ...mapState([
             'ytInfo',
             'queue',
-            'history'
+            'history',
+            'shuffle',
+            'shuffledList'
         ])
     },
     mounted() {
@@ -250,6 +270,7 @@ export default {
 
 <style scoped>
 /* This is a mess.. */
+
 .listAdd {
     position: fixed;
     top: 0;
@@ -263,7 +284,21 @@ export default {
 }
 .innerlist {
     overflow-y: scroll;
-    max-height: 250px;
+    max-height: 220px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.innerlist::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+#listAddBG {
+    background-color: rgb(30, 30, 30);
+    width: 300px;
+    height: auto;
+    padding: 20px;
+    margin: auto;
+    border-radius: 10px;
 }
 #list {
     background-color: rgb(168, 61, 61);
@@ -279,13 +314,13 @@ export default {
     margin: 10px 0 0 5px;
 }
 #cancel {
-    background-color: rgb(139, 139, 139);
-    border: none;
-    border-radius: 10px;
     padding: 10px 30px 10px 30px;
-    color: rgb(20, 20, 20);
     cursor: pointer;
     margin-top: 10px;
+    background-color: rgb(25, 25, 25);
+    border: none;
+    border-radius: 10px;
+    color: rgb(139, 139, 139);
 }
 
 .player {
@@ -302,8 +337,14 @@ export default {
     box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.4);
     user-select: text;
 }
+.img {
+    width: 100px;
+    float: left;
+    margin: 20px 10px 0 0;
+    display: block;
+}
 .info {
-    width: 300px;
+    width: 400px;
     min-width: 165px;
     text-align: left;
     padding: 0 0 0 15px;
@@ -330,8 +371,8 @@ export default {
 }
 .controls {
     background-color: none;
-    width: 600px;
-    min-width: 280px;
+    width: 650px;
+    min-width: 340px;
     text-align: center;
     padding: 13px 20px 0 20px;
 }
@@ -374,6 +415,12 @@ export default {
     background-color: rgb(50, 50, 50);
     border-radius: 10px;
 }
+#seekbar:hover #progress-bar {
+    background-color: white;
+}
+#seekbar:hover #bar-bg {
+    background-color: rgb(55, 55, 55);
+}
 #seekbar {
     height: 7px;
     padding: 5px 0 8px 0;
@@ -406,7 +453,7 @@ export default {
     bottom: 15px
 }
 .modifiers {
-    width: 300px;
+    width: 400px;
     min-width: 165px;
     text-align: right;
     padding: 25px 15px 0 0;
@@ -452,12 +499,15 @@ export default {
     border-radius: 20px;
     height: 7px;
 }
-#morePanel {
+#mobileExpanded {
     display: none;
 }
 
 /*mobile */
 @media (max-width: 500px) {
+    .img {
+        display: none;
+    }
     .player {
         flex-direction: column-reverse;
         height: 60px;
@@ -480,7 +530,7 @@ export default {
     }
     #seekbar {
         padding: 0 0 0 0;
-        margin: -12px 0 0 0;
+        margin: 7px 0 0 0;
         height: 5px;
         cursor: unset;
     }
@@ -527,7 +577,7 @@ export default {
         display: none;
     }
 
-    #morePanel {
+    #mobileExpanded {
         display: block;
         width: 100%;
         height: 100%;
@@ -540,7 +590,7 @@ export default {
         padding: 0;
         user-select: none;
     }
-    .moreImg {
+    .mobileImg {
         width: 85%;
         display: block;
         margin: auto;
@@ -552,10 +602,10 @@ export default {
         flex-direction: row;
         user-select: none;
     }
-    .infoArea {
+    .mobileInfo {
         position: absolute;
         width: 100%;
-        top: 15%;
+        top: 20%;
     }
     #mobileTitle {
         font-size: 15px;
@@ -563,11 +613,13 @@ export default {
         overflow: hidden;
         text-overflow: ellipsis;
         line-height: 1.2;
+        width: 85%;
+        margin: 20px auto auto auto;
     }
-    .controlArea {
+    .mobileControl {
         width: 100%;
         position: absolute;
-        bottom: 10%;
+        bottom: 15%;
     }
     #closeMoreIcon {
         color: rgb(163, 163, 163);
@@ -676,61 +728,6 @@ export default {
         color: rgb(218, 218, 218);
         position: relative;
         bottom: 15px
-    }
-
-    .mobileModifiers {
-        padding-top: 15%;
-    }
-    #mobileVolumeIcon {
-        color: rgb(212, 212, 212);
-        width: 27px;
-        height: 27px;
-        margin-top: -6px;
-        cursor: pointer;
-    }
-    #mobileVolumeIcon2 {
-        color: rgb(212, 212, 212);
-        width: 27px;
-        height: 27px;
-        margin-top: -6px;
-        cursor: pointer;
-    }
-    #mobileVolume {
-        width: 150px;
-        height: 10px;
-        outline: none;
-        -webkit-appearance: none;
-        background-color: rgb(50, 50, 50);
-        border-radius: 20px;
-        border: 0;
-        position: relative;
-        bottom: 8px;
-        margin: 0 10px 0 10px;
-        cursor: pointer;
-    }
-    #mobileVolume::-webkit-slider-runnable-track {
-        background: rgb(50, 50, 50);
-        height: 10px;
-        border-radius: 20px;
-    }
-    #mobileVolume::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        background-color: rgb(212, 212, 212);
-        height: 10px;
-        width: 20px;
-        border-radius: 20px;
-    }
-    #mobileVolume::-moz-range-thumb {
-        background-color: rgb(212, 212, 212);
-        height: 10px;
-        width: 20px;
-        border-radius: 20px;
-        border: none;
-    }
-    #mobileVolume::-moz-range-progress {
-        background-color: rgb(168, 61, 61);
-        border-radius: 20px;
-        height: 10px;
     }
 }
 </style>

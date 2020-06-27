@@ -14,7 +14,7 @@ router.post('/', verify, async (req, res) => {
         case 'video':
             try {
                 //pull from db
-                await User.findByIdAndUpdate(req.user.id, {$pull: {added_videos: {date: req.body.date}}}, {safe: true});
+                await User.findByIdAndUpdate(req.user.id, {$pull: {added_videos: {id: req.body.id}}}, {safe: true});
                 //send details
                 res.json({"msg":"Removed", "status":"success"});
             } catch(error) {

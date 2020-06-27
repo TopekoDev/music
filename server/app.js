@@ -28,6 +28,8 @@ const addRoute = require("./routes/add.js");
 app.use("/add", addRoute);
 const removeRoute = require("./routes/remove.js");
 app.use("/remove", removeRoute);
+const editRoute = require("./routes/edit.js");
+app.use("/edit", editRoute);
 const userRoute = require("./routes/user.js");
 app.use("/user", userRoute);
 const accountRoute = require("./routes/account.js");

@@ -14,10 +14,17 @@ router.post('/', verify, async (req, res) => {
     switch(req.body.type) {
         case 'video':
             try {
-                //add video to database
-                await User.findByIdAndUpdate(req.user.id, {$push: {added_videos: {video: req.body.video, date: req.body.date, list: req.body.list}}}, {safe: true, upsert: true});
-                //send details
-                res.json({"msg":"Added video", "status":"success"});
+                var theId = mongoose.Types.ObjectId().toString();
+                //get video order
+                User
+                .find({"_id": req.user.id})
+                .exec(async function(err, data) {
+                    var theOrder = data[0].added_videos.filter(x => x.list === req.body.list).length+1;
+                    //add video to database
+                    await User.findByIdAndUpdate(req.user.id, {$push: {added_videos: {video: req.body.video, list: req.body.list, order: theOrder, id: theId}}}, {safe: true, upsert: true});
+                    //send details
+                    res.json({"msg":"Added video", "status":"success"});
+                });
             } catch(error) {
                 res.send(error);
             }
