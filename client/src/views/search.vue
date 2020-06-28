@@ -27,7 +27,7 @@
 <script>
 import searchYoutube from 'youtube-api-v3-search';
 import axios from 'axios';
-import { mapMutations } from 'vuex';
+import { mapMutations, mapState } from 'vuex';
 
 export default {
     name: "search",
@@ -106,6 +106,11 @@ export default {
         ...mapMutations([
             'SET_VIDEO',
             'SET_LIST'
+        ])
+    },
+    computed: {
+        ...mapState([
+            'shuffle'
         ])
     },
     mounted() {
