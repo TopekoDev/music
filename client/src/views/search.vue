@@ -106,7 +106,8 @@ export default {
         ...mapMutations([
             'SET_VIDEO',
             'SET_LIST',
-            'CLEAR_VIDEO'
+            'CLEAR_VIDEO',
+            'SET_SHUFFLE'
         ])
     },
     computed: {
