@@ -1,18 +1,21 @@
 <template>
     <div class="container">
         <div v-if="!loggedIn" class="login">
+            <h1 style="font-size: 30px;">Home</h1>
             <p>If you want to add songs to a playlist <a href="/login">Login</a> or <a href="/register">Create account</a>.</p>
-            <p>You can still play music without an account :)</p>
         </div>
         <div v-if="loggedIn">
-            <p>Your lists:</p>
+            <h1 style="font-size: 30px;">Home</h1>
+            <h2 style="font-size: 18px;">Lists</h2>
             <div class="lists">
-                <div class="list" v-on:click="navigate('list?l=' + lists[index].id)" v-for="(object,index) in lists" v-bind:key="index">
-                    <p>{{ lists[index].name }}</p>
-                </div>
-                <div class="list" id="addlist" v-on:click="listCreator = true">
-                    <p>+ New List</p>
-                </div>
+            <div class="list" v-on:click="navigate('list?l=' + lists[index].id)" v-for="(object,index) in lists" v-bind:key="index">
+                <ListIcon class="listIcon"/>
+                <p class="listName">{{ lists[index].name }}</p>
+            </div>
+            <div class="list" id="addlist" v-on:click="listCreator = true">
+                <PlusIcon class="listIcon"/>
+                <p class="listName">New List</p>
+            </div>
             </div>
         </div>
         <div class="newList" v-if="listCreator">
@@ -31,17 +34,19 @@
 <script>
 import axios from 'axios';
 import { mapMutations } from 'vuex';
+import { ListIcon, PlusIcon } from 'vue-feather-icons';
 
 export default {
     name: "home",
     components: {
-        
+        ListIcon, PlusIcon
     },
     data() {
         return {
             loggedIn: false,
             lists: [],
-            listCreator: false
+            listCreator: false,
+            listName: ""
         }
     },
     methods: {
@@ -87,6 +92,7 @@ export default {
 </script>
 
 <style scoped>
+
 .newList {
     position: fixed;
     top: 0;
@@ -94,7 +100,7 @@ export default {
     z-index: 100;
     width: 100%;
     height: 100%;
-    padding-top: 40vh;
+    padding-top: 35vh;
     background-color: rgba(0, 0, 0, 0.5);
     text-align: center;
 }
@@ -117,7 +123,7 @@ export default {
     color: rgb(139, 139, 139);
 }
 .newList #field {
-    background-color:rgb(30, 30, 30);
+    background-color: rgb(25, 25, 25);
     font-size: 15px;
     border: none;
     color: rgb(212, 212, 212);
@@ -128,7 +134,7 @@ export default {
     border-radius: 2px;
 }
 .newList #createListBG {
-    background-color: rgb(30, 30, 30);
+    background-color: rgb(25, 25, 25);
     width: 300px;
     height: auto;
     padding: 20px;
@@ -136,41 +142,38 @@ export default {
     border-radius: 10px;
 }
 
-.lists {
-    display: flex;
-    flex-wrap: wrap;
-}
 .list {
-    width: 200px;
-    height: 200px;
-    background-color: rgb(30, 30, 30);
-    margin: 0 10px 20px 10px;
+    background-color: rgb(20, 20, 20);
+    margin: 5px auto 5px auto;
+    height: 70px;
+    width: 100%;
     display: flex;
-    align-items: center; /* Vertical center alignment */
-    justify-content: center;
+    border-radius: 5px;
+    align-items: center;
     cursor: pointer;
 }
 .list:hover {
     background-color: rgb(25, 25, 25);
 }
-.list p {
-    text-align: center;
+.listIcon {
+    height: 25px;
+    width: 25px;
+    color: white;
+    padding: 0 0 0 10px;
+    border-radius: 5px 0 0 5px;
+}
+.listName {
+    font-size: 18px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     padding: 0 10px 0 10px;
 }
+
 .container {
-    /* +180px from left is the sidebar width */
-    margin-left: 200px;
-    margin-right: 20px;
+    margin-left: 10vw;
+    margin-right: 10vw;
     margin-top: 80px;
-}
-@media (max-width: 860px) {
-    .container {
-        margin-top: 75px;
-        margin-left: 75px;
-        margin-right: 10px;
-    }
+    margin-bottom: 110px;
 }
 </style>

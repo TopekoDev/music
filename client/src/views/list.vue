@@ -7,16 +7,12 @@
         <button id="listEdit" v-on:click="editList()"><Edit2Icon class="icons"/></button>
         <div class="results">
             <div class="result" v-on:click="playList(index)" v-for="(object,index) in songs" v-bind:key="index">
-                <img class="image" v-bind:src="songs[index].video.snippet.thumbnails.default.url">
+                <img class="image" v-bind:src="songs[index].video.snippet.thumbnails.medium.url">
                 <button class="nBtn">{{ index+1 }}</button>
-                <div v-if="!shuffle">
-                    <p v-if="index != songs.length - queue.length - 1 || list != listId" class="title">{{ songs[index].video.snippet.title }}</p>
-                    <p v-if="index == songs.length - queue.length - 1 && list == listId" class="title" style="color: rgb(168, 61, 61);">{{ songs[index].video.snippet.title }}</p>
-                </div>
-                <div v-if="shuffle">
-                    <p v-if="index != shuffledList[shuffledList.length - queue.length -1 ].order -1 || list != listId" class="title">{{ songs[index].video.snippet.title }}</p>
-                    <p v-if="index == shuffledList[shuffledList.length - queue.length -1].order -1 && list == listId" class="title" style="color: rgb(168, 61, 61);">{{ songs[index].video.snippet.title }}</p>
-                </div>
+                <p v-if="!shuffle && (index != songs.length - queue.length - 1 || list != listId)" class="title">{{ songs[index].video.snippet.title }}</p>
+                <p v-if="!shuffle && (index == songs.length - queue.length - 1 && list == listId)" class="title" style="color: rgb(168, 61, 61);">{{ songs[index].video.snippet.title }}</p>
+                <p v-if="shuffle && (index != shuffledList[shuffledList.length - queue.length -1 ].order -1 || list != listId)" class="title">{{ songs[index].video.snippet.title }}</p>
+                <p v-if="shuffle && (index == shuffledList[shuffledList.length - queue.length -1].order -1 && list == listId)" class="title" style="color: rgb(168, 61, 61);">{{ songs[index].video.snippet.title }}</p>
             </div>
         </div>
         <p v-if="shuffle" id="shuffleText">Shuffling...</p>
@@ -42,28 +38,32 @@ export default {
     },
     methods: {
         playList: function(index) {
-            if(this.shuffle) {
-                this.CLEAR_VIDEO();
-                this.SET_SHUFFLE(false);
-            }
-            this.SET_LIST(this.listId);
-            this.SET_VIDEO(this.songs[index].video);
-            for(let i = index-1; i >= 0; i--) {
-                this.HISTORY_VIDEO(this.songs[i].video);
-            }
-            for(let i = this.songs.length-1; i > index; i--) {
-                this.QUEUE_VIDEO(this.songs[i].video);
+            if(this.songs.length > 0) {
+                if(this.shuffle) {
+                    this.CLEAR_VIDEO();
+                    this.SET_SHUFFLE(false);
+                }
+                this.SET_LIST(this.listId);
+                this.SET_VIDEO(this.songs[index].video);
+                for(let i = index-1; i >= 0; i--) {
+                    this.HISTORY_VIDEO(this.songs[i].video);
+                }
+                for(let i = this.songs.length-1; i > index; i--) {
+                    this.QUEUE_VIDEO(this.songs[i].video);
+                }
             }
         },
         shuffleList: function() {
-            this.CLEAR_VIDEO();
-            var shuffledSongs = this.songs.slice().sort(() => Math.random() - 0.5);
-            this.SET_SHUFFLE(true);
-            this.SET_SHUFFLE_LIST(shuffledSongs);
-            this.SET_LIST(this.listId);
-            this.SET_VIDEO(shuffledSongs[0].video);
-            for(let i = shuffledSongs.length-1; i > 0; i--) {
-                this.QUEUE_VIDEO(shuffledSongs[i].video);
+            if(this.songs.length > 0) {
+                this.CLEAR_VIDEO();
+                var shuffledSongs = this.songs.slice().sort(() => Math.random() - 0.5);
+                this.SET_SHUFFLE(true);
+                this.SET_SHUFFLE_LIST(shuffledSongs);
+                this.SET_LIST(this.listId);
+                this.SET_VIDEO(shuffledSongs[0].video);
+                for(let i = shuffledSongs.length-1; i > 0; i--) {
+                    this.QUEUE_VIDEO(shuffledSongs[i].video);
+                }
             }
         },
         getVideos: async function() {
@@ -74,28 +74,6 @@ export default {
             this.songs = theUser.data[0].added_videos.filter(x => x.list === this.listId);
             this.songs.sort((a, b) => a.order - b.order);
             this.listName = theUser.data[0].lists.filter(x => x.id === this.listId)[0].name;
-        },
-        removeVideo: async function(theOrder) {
-            if(confirm("Remove From List? Cannot be undone!")) {
-                const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/remove', {
-                    method: "post",
-                    data: {type: 'video', order: theOrder},
-                    withCredentials: true
-                });
-                console.log(response);
-                this.getVideos();
-            }
-        },
-        removeList: async function() {
-            if(confirm("Delete List? Cannot be undone!")) {
-                const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/remove', {
-                    method: "post",
-                    data: {type: 'list', id: this.listId},
-                    withCredentials: true
-                });
-                console.log(response);
-                this.$router.push('/home');
-            }
         },
         editList: function() {
             this.$router.push('/edit?l=' + this.listId);
@@ -186,7 +164,7 @@ export default {
 .result {
     background-color: rgb(20, 20, 20);
     margin: 5px auto 5px auto;
-    height: 50px;
+    height: 45px;
     width: 100%;
     display: flex;
     border-radius: 5px;
@@ -221,24 +199,8 @@ export default {
     background-color: rgb(25, 25, 25);
 }
 .container {
-    /* +180px from left is the sidebar width */
-    margin-left: 200px;
-    margin-right: 20px;
+    margin-left: 10vw;
+    margin-right: 10vw;
     margin-top: 80px;
-}
-@media (max-width: 860px) {
-    .container {
-        margin-top: 75px;
-        margin-left: 75px;
-        margin-right: 10px;
-    }
-}
-@media (max-width: 500px) {
-    .nBtn {
-        display: none;
-    }
-    .title {
-        margin-left: 10px;
-    }
 }
 </style>

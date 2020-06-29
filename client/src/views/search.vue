@@ -174,7 +174,7 @@ export default {
     background: transparent;
 }
 #listAddBG {
-    background-color: rgb(30, 30, 30);
+    background-color: rgb(25, 25, 25);
     width: 300px;
     height: auto;
     padding: 20px;
@@ -204,11 +204,9 @@ export default {
     color: rgb(139, 139, 139);
 }
 .container {
-    /* +180px from left is the sidebar width */
-    margin-left: 200px;
-    margin-right: 20px;
-    /* margins for the navbar and player */
-    padding: 80px 0 90px 0;
+    margin-left: 10vw;
+    margin-right: 10vw;
+    margin-top: 80px;
 }
 .loadBtn {
     background-color: rgb(168, 61, 61);
@@ -219,6 +217,9 @@ export default {
     margin: 20px auto 20px auto;
     padding: 10px 30px 10px 30px;
     border-radius: 20px;
+}
+.results {
+    padding-bottom: 90px;
 }
 .result {
     background-color: rgb(20, 20, 20);
@@ -270,24 +271,5 @@ export default {
 }
 .oBtn:hover {
     color: white;
-}
-@media (max-width: 860px) {
-    .container {
-        margin-left: 75px;
-        margin-right: 10px;
-        padding-top: 70px;
-    }
-}
-@media (max-width: 500px) {
-    .nBtn {
-        display: none;
-    }
-    .oBtn {
-        display: block;
-        background-color: rgb(20, 20, 20);
-    }
-    .result:hover .oBtn {
-        background-color: rgb(25, 25, 25);
-    }
 }
 </style>

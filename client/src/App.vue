@@ -2,7 +2,6 @@
   <div>
     <div class="container">
       <navbar v-if="!blacklist.includes($router.currentRoute.path)"/>
-      <sidebar v-if="!blacklist.includes($router.currentRoute.path)"/>
       <router-view id="router"/>
       <player v-if="!blacklist.includes($router.currentRoute.path)"/>
     </div>
@@ -12,13 +11,11 @@
 <script>
 import player from './components/player';
 import navbar from './components/navbar';
-import sidebar from './components/sidebar';
 export default {
   name: 'app',
   components: {
     player,
-    navbar,
-    sidebar
+    navbar
   },
   data() {
     return {
@@ -49,6 +46,7 @@ p {
 }
 body {
     margin: 0;
+    padding: 0;
     font-family:Arial, Helvetica, sans-serif;
     background-color: rgb(15, 15, 15);
 }

@@ -1,0 +1,951 @@
+This is just a backup
+Mobile view was removed because it was useless since YouTube API doesn't allow background play on mobile PogO
+Also includes other old code just in case
+
+<template>
+    <div>
+        <!-- This is a messs.. -->
+        <div id="mobileExpanded" style="bottom: -100%;">
+            <div class="closeArea" v-on:click="viewMore">
+                <ChevronDownIcon id="closeMoreIcon"/>
+                <p id="closeMoreTitle">Close</p>
+            </div>
+            <div class="mobileInfo">
+                <img v-if="ytInfo.snippet.thumbnails.medium.url == 'none'" class="mobileImg" src="../assets/medium-img.png" alt="">
+                <img v-if="ytInfo.snippet.thumbnails.medium.url != 'none'" class="mobileImg" v-bind:src="ytInfo.snippet.thumbnails.medium.url">
+                <p id="mobileTitle">{{ ytInfo.snippet.title }}</p>
+            </div>
+            <div class="mobileControl">
+                <div v-on:click="barSeek" id="mobileSeekbar">
+                    <p class="mobileProgress">{{ Math.round(Math.floor(this.progress / 60))+':'+('0'+Math.round(this.progress-(Math.floor(this.progress / 60)*60))).slice(-2) }}</p>
+                    <p class="mobileDuration">{{ Math.round(Math.floor(this.duration / 60))+':'+('0'+Math.round(this.duration-(Math.floor(this.duration / 60)*60))).slice(-2) }}</p>
+                    <div v-if="!isCued" id="mobileBar-bg"></div>
+                    <div v-if="!isCued" :style="{ width: (progress/duration)*100 + '%' }" id="mobileProgress-bar"></div>
+                    <div v-if="isCued" id="mobilePlaceholder-bar"></div>
+                </div>
+                <PlusIcon class="mobileCtrlL" id="mobileAdd" v-on:click="addToList(ytInfo)"/>
+                <SkipBackIcon class="mobileCtrlL" id="mobileBack" v-on:click="skipBack"/>
+                <PlayCircleIcon class="mobileCtrlC" style="padding: 0 13px 0 13px" id="mobilePlay" v-if="!isPlaying" v-on:click="playVideo"/>
+                <PauseCircleIcon class="mobileCtrlC" style="padding: 0 13px 0 13px" id="mobilePause" v-if="isPlaying" v-on:click="pauseVideo"/>
+                <SkipForwardIcon class="mobileCtrlR" id="mobileSeekF" v-on:click="skip"/>
+                <RepeatIcon v-if="!onRepeat" v-on:click="repeat" class="mobileCtrlR" id="mobileRepeat"/>
+                <RepeatIcon v-if="onRepeat" v-on:click="repeat" class="mobileCtrlR" id="mobileRepeatO"/>
+            </div>
+        </div>
+
+        <div class="player" v-on:click="viewMore">
+            <div class="info">
+                <youtube style="float: left; margin: 20px 10px 0 0;" width=100 height=60 v-bind:video-id="ytInfo.id.videoId" v-bind:player-vars="playerVars" v-on:cued="cued" v-on:playing="playing" v-on:ended="ended" ref="youtube"></youtube>
+                <!-- <img v-if="ytInfo.snippet.thumbnails.medium.url == 'none'" class="img" src="../assets/medium-img.png" alt="">
+                <img v-if="ytInfo.snippet.thumbnails.medium.url != 'none'" class="img" v-bind:src="ytInfo.snippet.thumbnails.medium.url"> -->
+                <ChevronUpIcon id="moreIcon"/>
+                <p class="title">{{ ytInfo.snippet.title }}</p>
+                <YoutubeIcon style="padding-right: 10px" class="infoBtn" v-on:click="openYt"/>
+            </div>
+            <div class="controls">
+                <PlusIcon class="ctrlIcon" id="add" v-on:click="addToList(ytInfo)"/>
+                <SkipBackIcon class="ctrlIcon" id="back" v-on:click="skipBack"/>
+                <PlayCircleIcon class="ctrlIcon" style="padding: 0 13px 0 13px" id="play" v-if="!isPlaying" v-on:click="playVideo"/>
+                <PauseCircleIcon class="ctrlIcon" style="padding: 0 13px 0 13px" id="pause" v-if="isPlaying" v-on:click="pauseVideo"/>
+                <SkipForwardIcon class="ctrlIcon" id="forward" v-on:click="skip"/>
+                <RepeatIcon v-if="!onRepeat" class="ctrlIcon" id="repeat" v-on:click="repeat"/>
+                <RepeatIcon v-if="onRepeat" class="ctrlIcon" id="repeatO" v-on:click="repeat"/>
+                <div v-on:click="barSeek" id="seekbar">
+                    <p class="progress">{{ Math.round(Math.floor(this.progress / 60))+':'+('0'+Math.round(this.progress-(Math.floor(this.progress / 60)*60))).slice(-2) }}</p>
+                    <p class="duration">{{ Math.round(Math.floor(this.duration / 60))+':'+('0'+Math.round(this.duration-(Math.floor(this.duration / 60)*60))).slice(-2) }}</p>
+                    <div v-if="!isCued" id="bar-bg"></div>
+                    <div v-if="!isCued" :style="{ width: (progress/duration)*100 + '%' }" id="progress-bar"></div>
+                    <div v-if="isCued" id="placeholder-bar"></div>
+                </div>
+            </div>
+            <div class="modifiers">
+                <Volume1Icon id="volumeIcon"/>
+                <input v-model="volume" type="range" name="volume" id="volume">
+            </div>
+        </div>
+
+        <div class="listAdd" v-if="listAdder">
+            <div id="listAddBG">
+                <p style="margin: 0 0 10px 0; padding: 0;">Add to list</p>
+                <div class="innerlist">
+                    <div v-for="(object,index) in lists" v-bind:key="index">
+                    <button id="list" v-on:click="addVideo(selectedVideo, lists[index].id)">{{ lists[index].name }}</button>
+                    </div>
+                    <br>
+                </div>
+                <button id="cancel" v-on:click="listAdder=false">Cancel</button>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import { mapMutations, mapState } from 'vuex';
+import { PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, /*Volume2Icon, VolumeXIcon,*/ YoutubeIcon, PlusIcon, RepeatIcon } from 'vue-feather-icons';
+import axios from 'axios';
+
+export default {
+    name: "player",
+    components: {
+        PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, /*Volume2Icon, VolumeXIcon,*/ YoutubeIcon, PlusIcon, RepeatIcon
+    },
+    data() {
+        return {
+            playerVars: {
+                autoplay: 0,
+                controls: 0,
+                disablekb: 1
+            },
+            progress: 0,
+            duration: 0.1,
+            volume: 50,
+            onRepeat: false,
+            isPlaying: false,
+            isCued: false,
+            listAdder: false,
+            selectedVideo: "",
+            lists: []
+        }
+    },
+    methods: {
+        addToList: function(video) {
+            this.getLists();
+            this.listAdder = true;
+            this.selectedVideo = video;
+        },
+        getLists: async function() {
+            const theUser = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/user', {
+                method: "get",
+                withCredentials: true
+            });
+            this.lists = theUser.data[0].lists;
+        },
+        addVideo: async function(video, theList) {
+            let theVid = video;
+            const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/add', {
+                method: "post",
+                data: {type: 'video' ,list: theList, video: theVid},
+                withCredentials: true
+            });
+            this.listAdder = false;
+            this.selectedVideo = "";
+            console.log(response);
+        },
+        playVideo: function() {
+            if(this.ytInfo.id.videoId != 'none') {
+                this.$refs.youtube.player.playVideo();
+                this.isPlaying = true;
+            }
+        },
+        pauseVideo: function() {
+            if(this.ytInfo.id.videoId != 'none') {
+                this.$refs.youtube.player.pauseVideo();
+                this.isPlaying = false;
+            }
+        },
+        stopVideo: function() {
+            if(this.ytInfo.id.videoId != 'none') {
+                this.$refs.youtube.player.stopVideo();
+                this.isPlaying = false;
+            }
+        },
+        updateVideo: async function() {
+            if(this.ytInfo.id.videoId != 'none') {
+                this.progress = await this.$refs.youtube.player.getCurrentTime();
+                this.duration = await this.$refs.youtube.player.getDuration();
+                this.$refs.youtube.player.setVolume(this.volume);
+            }
+        },
+        seekVideo: function(amount) {
+            this.$refs.youtube.player.seekTo(amount);
+        },
+        playing: function() {
+            this.isCued = false;
+        },
+        ended: function() {
+            if(this.onRepeat) {
+                this.playVideo();
+            } else {
+                if(this.queue.length > 0) {
+                    if(this.queue[0].id.videoId == this.ytInfo.id.videoId) {
+                        this.seekVideo(0);
+                        this.playVideo();
+                    }
+                    this.NEXT_VIDEO();
+                } else {
+                    if(this.shuffle) {
+                        this.SET_SHUFFLE_LIST(this.shuffledList.slice().sort(() => Math.random() - 0.5));
+                        this.SET_VIDEO(this.shuffledList[0].video);
+                        for(let i = this.shuffledList.length-1; i > 0; i--) {
+                            this.QUEUE_VIDEO(this.shuffledList[i].video);
+                        }
+                        this.playVideo();
+                    } else {
+                        if(this.history.length >= 0) {
+                            this.CLEAR_VIDEO();
+                        } else {
+                            this.pauseVideo();
+                            this.seekVideo(0);
+                        }
+                    }
+                }
+            }  
+        },
+        cued: function() {
+            this.isCued = true;
+            this.playVideo();
+        },
+        barSeek: function(event) {
+            if(window.innerWidth <= '500' && document.getElementById('mobileExpanded').style.bottom == '0px') {
+                this.seekVideo(((event.offsetX)/(document.getElementById('mobileSeekbar').offsetWidth))*this.duration);
+            } else if(window.innerWidth > '500') {
+                this.seekVideo(((event.offsetX)/(document.getElementById('seekbar').offsetWidth))*this.duration);
+            }
+        },
+        repeat: function() {
+            if(!this.onRepeat) {
+                this.onRepeat = true;
+            } else {
+                this.onRepeat = false;
+            }
+        },
+        skip: function() {
+            this.seekVideo(this.duration);
+        },
+        skipBack: function() {
+            if(this.history.length > 0) {
+                if(this.progress >= 5) {
+                    this.seekVideo(0);
+                } else {
+                    this.PREVIOUS_VIDEO();
+                }
+            } else {
+                this.seekVideo(0);
+            }
+        },
+        openYt: function() {
+            window.open("https://youtube.com/watch?v=" + this.ytInfo.id.videoId, "_blank");   
+        },
+        viewMore: function(event) {
+            if(window.innerWidth <= '500') {
+                var tag = event.target.tagName;
+                if(tag!='svg' && tag!='polygon' && tag!='circle' && tag!='line') {
+                    if(document.getElementById('mobileExpanded').style.bottom == '-100%') {
+                        document.getElementById('mobileExpanded').style.bottom = '0';
+                    } else {
+                        document.getElementById('mobileExpanded').style.bottom = '-100%';
+                    }
+                }
+            }
+        },
+        ...mapMutations([
+            'SET_VIDEO',
+            'SET_LIST',
+            'NEXT_VIDEO',
+            'QUEUE_VIDEO',
+            'PREVIOUS_VIDEO',
+            'CLEAR_VIDEO',
+            'SET_SHUFFLE',
+            'SET_SHUFFLE_LIST'
+        ])
+    },
+    computed: {
+        ...mapState([
+            'ytInfo',
+            'queue',
+            'history',
+            'shuffle',
+            'shuffledList'
+        ])
+    },
+    mounted() {
+        setInterval(this.updateVideo,250);
+        if(this.$cookie.get('volume')) {
+            this.volume = this.$cookie.get('volume');
+        }
+    },
+    watch: {
+        volume() {
+            this.$cookie.set('volume', this.volume, { expires: '2Y' });
+        }
+    }
+}
+</script>
+
+<style scoped>
+/* This is a mess.. */
+
+.listAdd {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    padding-top: 30vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+.innerlist {
+    overflow-y: scroll;
+    max-height: 220px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.innerlist::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+#listAddBG {
+    background-color: rgb(30, 30, 30);
+    width: 300px;
+    height: auto;
+    padding: 20px;
+    margin: auto;
+    border-radius: 10px;
+}
+#list {
+    background-color: rgb(168, 61, 61);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 30px 10px 30px;
+    width: 200px;
+    color: white;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 10px 0 0 5px;
+}
+#cancel {
+    padding: 10px 30px 10px 30px;
+    cursor: pointer;
+    margin-top: 10px;
+    background-color: rgb(25, 25, 25);
+    border: none;
+    border-radius: 10px;
+    color: rgb(139, 139, 139);
+}
+
+.player {
+    position: fixed;
+    bottom: 0;
+    background-color: rgb(35, 35, 35);
+    width: 100%;
+    padding: 0 0 0 0;
+    height: 90px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 0 auto;
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.4);
+    user-select: text;
+}
+.img {
+    width: 100px;
+    float: left;
+    margin: 20px 10px 0 0;
+    display: block;
+}
+.info {
+    width: 400px;
+    min-width: 165px;
+    text-align: left;
+    padding: 0 0 0 15px;
+}
+.title {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 8px 0 0 0;
+    line-height: 1.2;
+}
+#moreIcon {
+    display: none;
+}
+.infoBtn {
+    color: rgb(212, 212, 212);
+    width: 24px;
+    height: 24px;
+}
+.infoBtn:hover {
+    cursor: pointer;
+    color: rgb(177, 58, 58);
+}
+.controls {
+    background-color: none;
+    width: 650px;
+    min-width: 340px;
+    text-align: center;
+    padding: 13px 20px 0 20px;
+}
+#play, #pause {
+    width: 37px;
+    height: 37px;
+    color: rgb(226, 226, 226);
+    cursor: pointer;
+}
+#back, #forward {
+    width: 28px;
+    height: 28px;
+    color: rgb(204, 204, 204);
+    cursor: pointer;
+    position: relative;
+    bottom: 4px;
+}
+#add, #repeat, #repeatO {
+    width: 20px;
+    height: 20px;
+    color: rgb(204, 204, 204);
+    cursor: pointer;
+    position: relative;
+    bottom: 8px;
+    padding: 0 20px 0 20px;
+}
+#repeatO {
+    color: rgb(177, 58, 58);
+}
+#progress-bar {
+    background-color: rgb(212, 212, 212);
+    height: 7px;
+    position: relative;
+    top: -7px;
+    border-radius: 10px;
+}
+#bar-bg {
+    width: 100%;
+    height: 7px;
+    background-color: rgb(50, 50, 50);
+    border-radius: 10px;
+}
+#seekbar:hover #progress-bar {
+    background-color: white;
+}
+#seekbar:hover #bar-bg {
+    background-color: rgb(55, 55, 55);
+}
+#seekbar {
+    height: 7px;
+    padding: 5px 0 8px 0;
+    margin-top: 8px;
+    cursor: pointer;
+}
+#placeholder-bar {
+    width: 100%;
+    height: 7px;
+    background-color: rgb(60, 60, 60);
+    border-radius: 10px;
+    cursor: progress;
+}
+.progress {
+    padding: 0;
+    margin: 0;
+    float: left;
+    font-size: 10px;
+    color: rgb(218, 218, 218);
+    position: relative;
+    bottom: 15px;
+}
+.duration {
+    padding: 0;
+    margin: 0;
+    float: right;
+    font-size: 10px;
+    color: rgb(218, 218, 218);
+    position: relative;
+    bottom: 15px
+}
+.modifiers {
+    width: 400px;
+    min-width: 165px;
+    text-align: right;
+    padding: 25px 15px 0 0;
+}
+#volumeIcon {
+    color: rgb(212, 212, 212);
+    width: 27px;
+    height: 27px;
+    position: relative;
+    top: 8px;
+}
+#volume {
+    width: 130px;
+    height: 7px;
+    outline: none;
+    -webkit-appearance: none;
+    background-color: rgb(50, 50, 50);
+    border-radius: 20px;
+    border: 0;
+    cursor: pointer;
+}
+#volume::-webkit-slider-runnable-track {
+    background: rgb(50, 50, 50);
+    height: 7px;
+    border-radius: 20px;
+}
+#volume::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    background-color: rgb(212, 212, 212);
+    height: 7px;
+    width: 20px;
+    border-radius: 20px;
+}
+#volume::-moz-range-thumb {
+    background-color: rgb(212, 212, 212);
+    height: 7px;
+    width: 20px;
+    border-radius: 20px;
+    border: none;
+}
+#volume::-moz-range-progress {
+    background-color: rgb(168, 61, 61);
+    border-radius: 20px;
+    height: 7px;
+}
+#mobileExpanded {
+    display: none;
+}
+
+/*mobile */
+@media (max-width: 500px) {
+    .img {
+        display: none;
+    }
+    .player {
+        flex-direction: column-reverse;
+        height: 60px;
+        user-select: text;
+    }
+    .controls {
+        width: 100%;
+        padding: 0;
+        margin: 0 auto -32px auto;
+    }
+    .ctrlIcon {
+        width: 33px;
+        height: 33px;
+        float:  right;
+        padding: 0;
+        margin-top: 22px;
+    }
+    #back, #forward, #add, #repeat, #repeatO {
+        display: none;
+    }
+    #seekbar {
+        padding: 0 0 0 0;
+        margin: 7px 0 0 0;
+        height: 5px;
+        cursor: unset;
+    }
+    #progress-bar {
+        border-radius: 0;
+        height: 5px;
+        top: -5px;
+    }
+    #bar-bg {
+        border-radius: 0;
+        height: 5px;
+    }
+    #placeholder-bar {
+        border-radius: 0;
+        height: 5px;
+    }
+    .progress, .duration {
+        display: none;
+    }
+    .info {
+        display: block;
+        margin-bottom: 10px;
+    }
+    .infoBtn {
+        display: none;
+    }
+    .title {
+        padding: 0;
+        margin-bottom: 10px;
+        max-width: 250px;
+        font-size: 12px;
+        margin-left: 30px;
+    }
+    #moreIcon {
+        color: rgb(163, 163, 163);
+        display: block;
+        margin-bottom: -31px;
+        margin-left: -5px;
+        pointer-events: none;
+        height: 25px;
+        width: 25px;
+    }
+    .modifiers {
+        display: none;
+    }
+
+    #mobileExpanded {
+        display: block;
+        width: 100%;
+        height: 100%;
+        background-color:rgb(35, 35, 35);
+        position: fixed;
+        bottom: -100%;
+        z-index: 10;
+        transition: bottom .2s ease-out;
+        text-align: center;
+        padding: 0;
+        user-select: none;
+    }
+    .mobileImg {
+        width: 85%;
+        display: block;
+        margin: auto;
+        border-radius: 5px;
+    }
+    .closeArea {
+        height: 50px;
+        display: flex;
+        flex-direction: row;
+        user-select: none;
+    }
+    .mobileInfo {
+        position: absolute;
+        width: 100%;
+        top: 20%;
+    }
+    #mobileTitle {
+        font-size: 15px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.2;
+        width: 85%;
+        margin: 20px auto auto auto;
+    }
+    .mobileControl {
+        width: 100%;
+        position: absolute;
+        bottom: 15%;
+    }
+    #closeMoreIcon {
+        color: rgb(163, 163, 163);
+        display: block;
+        pointer-events: none;
+        margin-top: 15px;
+        margin-left: 10px;
+        height: 25px;
+        width: 25px;
+    }
+    #closeMoreTitle {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.2;
+        font-size: 12px;
+        text-align: left;
+        margin: 21px 0 0 15px;
+        max-width: 250px;
+        color: rgb(163, 163, 163);
+    }
+    .mobileCtrlL {
+        color: rgb(226, 226, 226);
+        height: 45px;
+        width: 45px;
+        padding: 0 10px 0 0;
+        margin-bottom: -9px;
+        cursor: pointer;
+    }
+    #mobileAdd, #mobileRepeat, #mobileRepeatO {
+        height: 25px;
+        width: 25px;
+        margin: 0 10px 1px 10px;
+    }
+    #mobileRepeatO{
+        color: rgb(177, 58, 58);
+    } 
+    .mobileCtrlR {
+        color: rgb(226, 226, 226);
+        height: 45px;
+        width: 45px;
+        padding: 0 0 0 10px;
+        margin-bottom: -9px;
+        cursor: pointer;
+    }
+    .mobileCtrlC {
+        color: rgb(226, 226, 226);
+        height: 50px;
+        width: 50px;
+        margin: 0 -10px 0 -10px;
+        margin-bottom: -12px;
+        cursor: pointer; 
+    }
+    .progress2 {
+        display: inline-block;
+        margin-right: 10px;
+        color: rgb(226, 226, 226);
+    }
+    .duration2 {
+        display: inline-block;
+        margin-left: 10px;
+        color: rgb(226, 226, 226);
+    }
+
+    #mobileProgress-bar {
+        background-color: rgb(212, 212, 212);
+        height: 9px;
+        position: relative;
+        top: -9px;
+        border-radius: 10px;
+    }
+    #mobileBar-bg {
+        width: 100%;
+        height: 9px;
+        background-color: rgb(50, 50, 50);
+        border-radius: 10px;
+    }
+    #mobileSeekbar {
+        height: 9px;
+        padding: 5px 0 12% 0;
+        cursor: pointer;
+        width: 85%;
+        margin: auto;
+    }
+    #mobilePlaceholder-bar {
+        width: 100%;
+        height: 9px;
+        background-color: rgb(60, 60, 60);
+        border-radius: 10px;
+        cursor: progress;
+    }
+    .mobileProgress {
+        padding: 0;
+        margin: 0;
+        float: left;
+        font-size: 10px;
+        color: rgb(218, 218, 218);
+        position: relative;
+        bottom: 15px;
+    }
+    .mobileDuration {
+        padding: 0;
+        margin: 0;
+        float: right;
+        font-size: 10px;
+        color: rgb(218, 218, 218);
+        position: relative;
+        bottom: 15px
+    }
+}
+</style>
+
+
+<template>
+    <div>
+        <div class="sidebar">
+            <p id="logo" v-on:click="navigate('home')">TZMusic</p>
+            <div class="menuItems">
+                <ul>
+                    <li v-on:click="navigate('home')"><HomeIcon class="icons"/>Home</li>
+                    <li v-on:click="navigate('settings')"><SettingsIcon class="icons"/>Settings</li>
+                    <br>
+                    <div class="listItems" v-if="loggedIn">
+                        <li v-on:click="navigate('list?l=' + lists[index].id)" v-for="(object,index) in lists" v-bind:key="index" ><ListIcon class="lists"/><p class="listsTxt">{{ lists[index].name }}</p></li>
+                        <li v-on:click="listCreator = true"><PlusIcon class="icons"/>New List</li>
+                    </div>
+                </ul>
+            </div>
+        </div>
+        <div class="newList" v-if="listCreator">
+            <div id="createListBG">
+                <div class="createList">
+                    <input id="field" class="inField" v-on:keyup.enter="createList" autocomplete="off" name="name" type="text" placeholder="Enter list name..." v-model="listName" />
+                    <br/><br>
+                    <button id="create" v-on:click="createList">Create</button>
+                    <button id="cancel" v-on:click="listCreator=false; listName=''">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import { HomeIcon, SettingsIcon, ListIcon, PlusIcon } from 'vue-feather-icons';
+import axios from 'axios';
+
+export default {
+    name: "sidebar",
+    components: {
+        HomeIcon, SettingsIcon, ListIcon, PlusIcon
+    },
+    data() {
+        return {
+            lists: [],
+            listName: "",
+            listCreator: false,
+            loggedIn: false
+        }
+    },
+    methods: {
+        getLists: async function() {
+            const theUser = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/user', {
+                method: "get",
+                withCredentials: true
+            });
+            this.lists = theUser.data[0].lists;
+            this.lists.sort(function(a, b) { 
+                return a.name > b.name ? 1 : -1;
+            });
+        },
+        createList: async function() {
+            if(this.listName.length > 0) {
+                const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/add', {
+                    method: "post",
+                    data: {type: 'list', list: this.listName},
+                    withCredentials: true
+                });
+                console.log(response);
+                this.getLists();
+                this.listCreator = false;
+                this.listName = "";
+            }
+        },
+        navigate: function(route) {
+            this.$router.push('/' + route);
+        }
+    },
+    watch: {
+        $route() {
+            if(this.loggedIn) {
+                this.getLists();
+            }
+        }
+    },
+    mounted() {
+        if(this.$cookie.get('loggedin') == "true") {
+            this.loggedIn = true;
+            this.getLists();
+        } else {
+            this.loggedIn = false;
+        }
+    }
+}
+</script>
+
+<style scoped>
+.newList {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    padding-top: 40vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+.newList #create {
+    background-color: rgb(168, 61, 61);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 30px 10px 30px;
+    color: white;
+    cursor: pointer;
+    margin-right: 12px;
+}
+.newList #cancel {
+    padding: 10px 30px 10px 30px;
+    cursor: pointer;
+    margin-left: 12px;
+    background-color: rgb(25, 25, 25);
+    border: none;
+    border-radius: 10px;
+    color: rgb(139, 139, 139);
+}
+.newList #field {
+    background-color:rgb(30, 30, 30);
+    font-size: 15px;
+    border: none;
+    color: rgb(212, 212, 212);
+    height: 35px;
+    width: 225px;
+    flex: 1;
+    padding: 0 5px 0 5px;
+    border-radius: 2px;
+}
+.newList #createListBG {
+    background-color: rgb(30, 30, 30);
+    width: 300px;
+    height: auto;
+    padding: 20px;
+    margin: auto;
+    border-radius: 10px;
+}
+
+
+.sidebar {
+    background-color: rgba(30, 30, 30);
+    width: 180px;
+    position: fixed;
+    top: 0;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+#logo {
+    font-size: 20px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+}
+.menuItems {
+    padding: 0;
+}
+.menuItems ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.menuItems .icons {
+    height: 25px;
+    width: 25px;
+    vertical-align: middle;
+    margin: 0 10px 2px 20px;
+}
+.menuItems .lists {
+    height: 25px;
+    width: 25px;
+    vertical-align: middle;
+    margin: 0 10px 0 20px;
+    display: inline-block;
+}
+.menuItems .listsTxt {
+    width: 110px;
+    margin: 0 0 -5px 0;
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.menuItems li {
+    color: white;
+    padding: 10px 0 10px 0;
+    cursor: pointer;
+    font-size: 16px;
+}
+.menuItems li:hover {
+    background-color: rgba(255, 255, 255, 0.01);
+}
+@media (max-width: 700px) {
+    .listItems {
+        display: none;
+    }
+    .menuItems li {
+        font-size: 0;
+    }
+    .sidebar {
+        width: 65px;
+        padding-top: 64px;
+    }
+    #logo {
+        font-size: 0;
+    }
+}
+</style>

@@ -1,44 +1,18 @@
 <template>
     <div>
-        <!-- This is a messs.. -->
-        <div id="mobileExpanded" style="bottom: -100%;">
-            <div class="closeArea" v-on:click="viewMore">
-                <ChevronDownIcon id="closeMoreIcon"/>
-                <p id="closeMoreTitle">Close</p>
-            </div>
-            <div class="mobileInfo">
-                <img v-if="ytInfo.snippet.thumbnails.medium.url == 'none'" class="mobileImg" src="../assets/medium-img.png" alt="">
-                <img v-if="ytInfo.snippet.thumbnails.medium.url != 'none'" class="mobileImg" v-bind:src="ytInfo.snippet.thumbnails.medium.url">
-                <p id="mobileTitle">{{ ytInfo.snippet.title }}</p>
-            </div>
-            <div class="mobileControl">
-                <div v-on:click="barSeek" id="mobileSeekbar">
-                    <p class="mobileProgress">{{ Math.round(Math.floor(this.progress / 60))+':'+('0'+Math.round(this.progress-(Math.floor(this.progress / 60)*60))).slice(-2) }}</p>
-                    <p class="mobileDuration">{{ Math.round(Math.floor(this.duration / 60))+':'+('0'+Math.round(this.duration-(Math.floor(this.duration / 60)*60))).slice(-2) }}</p>
-                    <div v-if="!isCued" id="mobileBar-bg"></div>
-                    <div v-if="!isCued" :style="{ width: (progress/duration)*100 + '%' }" id="mobileProgress-bar"></div>
-                    <div v-if="isCued" id="mobilePlaceholder-bar"></div>
-                </div>
-                <PlusIcon class="mobileCtrlL" id="mobileAdd" v-on:click="addToList(ytInfo)"/>
-                <SkipBackIcon class="mobileCtrlL" id="mobileBack" v-on:click="skipBack"/>
-                <PlayCircleIcon class="mobileCtrlC" style="padding: 0 13px 0 13px" id="mobilePlay" v-if="!isPlaying" v-on:click="playVideo"/>
-                <PauseCircleIcon class="mobileCtrlC" style="padding: 0 13px 0 13px" id="mobilePause" v-if="isPlaying" v-on:click="pauseVideo"/>
-                <SkipForwardIcon class="mobileCtrlR" id="mobileSeekF" v-on:click="skip"/>
-                <RepeatIcon v-if="!onRepeat" v-on:click="repeat" class="mobileCtrlR" id="mobileRepeat"/>
-                <RepeatIcon v-if="onRepeat" v-on:click="repeat" class="mobileCtrlR" id="mobileRepeatO"/>
-            </div>
+        <div id="MOBILEDETECTED" v-if="mobile">
+            <p>This website was not designed for mobile!</p>
+            <button v-on:click="mobile = false">I don't care :)</button>
         </div>
-
-        <div class="player" v-on:click="viewMore">
+        <div id="player">
             <div class="info">
-                <img v-if="ytInfo.snippet.thumbnails.medium.url == 'none'" class="img" src="../assets/medium-img.png" alt="">
-                <img v-if="ytInfo.snippet.thumbnails.medium.url != 'none'" class="img" v-bind:src="ytInfo.snippet.thumbnails.medium.url">
-                <ChevronUpIcon id="moreIcon"/>
-                <p class="title">{{ ytInfo.snippet.title }}</p>
-                <YoutubeIcon style="padding-right: 10px" class="infoBtn" v-on:click="openYt"/>
+                <youtube style="position: relative; bottom: 0; width: 179px; height: 100px; float: left; margin: 0 0 0 0; pointer-events: none;" id="ytPlayer" width=100% height=100% v-bind:video-id="ytInfo.id.videoId" v-bind:player-vars="playerVars" v-on:cued="cued" v-on:playing="playing" v-on:paused="paused" v-on:ended="ended" ref="youtube"></youtube>
+                <ArrowUpRightIcon id="expandIcon" v-on:click="expand"/>
+                <ArrowDownLeftIcon v-if="expanded" id="minimizeIcon" v-on:click="minimize"/>
+                <p id="title" style="padding-left: 10px">{{ ytInfo.snippet.title }}</p>
+                <YoutubeIcon style="padding-right: 10px; margin-left: 10px;" class="infoBtn" v-on:click="openYt"/>
             </div>
             <div class="controls">
-                <youtube style="display: none" width=0 height=0 v-bind:video-id="ytInfo.id.videoId" v-bind:player-vars="playerVars" v-on:cued="cued" v-on:playing="playing" v-on:ended="ended" ref="youtube"></youtube>
                 <PlusIcon class="ctrlIcon" id="add" v-on:click="addToList(ytInfo)"/>
                 <SkipBackIcon class="ctrlIcon" id="back" v-on:click="skipBack"/>
                 <PlayCircleIcon class="ctrlIcon" style="padding: 0 13px 0 13px" id="play" v-if="!isPlaying" v-on:click="playVideo"/>
@@ -55,7 +29,8 @@
                 </div>
             </div>
             <div class="modifiers">
-                <Volume1Icon id="volumeIcon"/>
+                <VolumeXIcon style="margin-right: 3px;" v-if="muted" v-on:click="unMute" id="volumeIcon"/>
+                <Volume1Icon v-if="!muted" v-on:click="mute" id="volumeIcon"/>
                 <input v-model="volume" type="range" name="volume" id="volume">
             </div>
         </div>
@@ -72,25 +47,29 @@
                 <button id="cancel" v-on:click="listAdder=false">Cancel</button>
             </div>
         </div>
+
     </div>
 </template>
 
 <script>
 import { mapMutations, mapState } from 'vuex';
-import { PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, /*Volume2Icon, VolumeXIcon,*/ YoutubeIcon, PlusIcon, RepeatIcon } from 'vue-feather-icons';
+import { PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, Volume1Icon, VolumeXIcon, YoutubeIcon, PlusIcon, RepeatIcon, ArrowUpRightIcon, ArrowDownLeftIcon } from 'vue-feather-icons';
 import axios from 'axios';
 
 export default {
     name: "player",
     components: {
-        PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, ChevronUpIcon, ChevronDownIcon, Volume1Icon, /*Volume2Icon, VolumeXIcon,*/ YoutubeIcon, PlusIcon, RepeatIcon
+        PlayCircleIcon, PauseCircleIcon, SkipBackIcon, SkipForwardIcon, Volume1Icon, VolumeXIcon, YoutubeIcon, PlusIcon, RepeatIcon, ArrowUpRightIcon, ArrowDownLeftIcon
     },
     data() {
         return {
             playerVars: {
+                enablejsapi: 1,
                 autoplay: 0,
-                controls: 0,
-                disablekb: 1
+                controls: 1,
+                disablekb: 1,
+                fs: 0,
+                modestbranding: 1
             },
             progress: 0,
             duration: 0.1,
@@ -100,7 +79,11 @@ export default {
             isCued: false,
             listAdder: false,
             selectedVideo: "",
-            lists: []
+            lists: [],
+            mobile: false,
+            muted: false,
+            expanded: false,
+            warning: false
         }
     },
     methods: {
@@ -130,35 +113,44 @@ export default {
         playVideo: function() {
             if(this.ytInfo.id.videoId != 'none') {
                 this.$refs.youtube.player.playVideo();
-                this.isPlaying = true;
             }
         },
         pauseVideo: function() {
             if(this.ytInfo.id.videoId != 'none') {
                 this.$refs.youtube.player.pauseVideo();
-                this.isPlaying = false;
-            }
-        },
-        stopVideo: function() {
-            if(this.ytInfo.id.videoId != 'none') {
-                this.$refs.youtube.player.stopVideo();
-                this.isPlaying = false;
             }
         },
         updateVideo: async function() {
+            // I Don't think there's a better way...
             if(this.ytInfo.id.videoId != 'none') {
                 this.progress = await this.$refs.youtube.player.getCurrentTime();
                 this.duration = await this.$refs.youtube.player.getDuration();
                 this.$refs.youtube.player.setVolume(this.volume);
+                if(this.muted) {this.$refs.youtube.player.mute();} else {this.$refs.youtube.player.unMute()}
             }
         },
         seekVideo: function(amount) {
             this.$refs.youtube.player.seekTo(amount);
         },
-        playing: function() {
+        playing: async function() {
             this.isCued = false;
+            this.isPlaying = true;
+            if(!this.warning) {
+                let quality = await this.$refs.youtube.player.getPlaybackQuality();
+                switch (quality) {
+                    case "hd720": case "hd1080": case "highres":
+                        console.log(quality);
+                        alert("Quality lower than 720p is recommended.\nIt can be changed by expanding the video in the bottom left corner.\nPress 'OK' to not see this again.");
+                        this.warning = true;
+                        break;
+                }
+            }
+        },
+        paused: function() {
+            this.isPlaying = false;
         },
         ended: function() {
+            this.isPlaying = false;
             if(this.onRepeat) {
                 this.playVideo();
             } else {
@@ -208,6 +200,14 @@ export default {
         skip: function() {
             this.seekVideo(this.duration);
         },
+        mute: function() {
+            this.muted = true;
+        },
+        unMute: function() {
+            if(this.volume > 0) {
+                this.muted = false;
+            }
+        },
         skipBack: function() {
             if(this.history.length > 0) {
                 if(this.progress >= 5) {
@@ -222,17 +222,31 @@ export default {
         openYt: function() {
             window.open("https://youtube.com/watch?v=" + this.ytInfo.id.videoId, "_blank");   
         },
-        viewMore: function(event) {
-            if(window.innerWidth <= '500') {
-                var tag = event.target.tagName;
-                if(tag!='svg' && tag!='polygon' && tag!='circle' && tag!='line') {
-                    if(document.getElementById('mobileExpanded').style.bottom == '-100%') {
-                        document.getElementById('mobileExpanded').style.bottom = '0';
-                    } else {
-                        document.getElementById('mobileExpanded').style.bottom = '-100%';
-                    }
-                }
-            }
+        expand: function() {
+            // some disable scrolling thing I found idk..
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            window.onscroll = function() { window.scrollTo(scrollTop) }
+            document.body.style.overflowY = "hidden";
+
+            this.expanded = true;
+            var ytPlayer = document.getElementById("ytPlayer");
+            ytPlayer.style.position = "absolute";
+            ytPlayer.style.pointerEvents = "auto";
+            ytPlayer.style.bottom = "90px";
+            ytPlayer.style.width = "100%";
+            ytPlayer.style.height = "100vh";
+        },
+        minimize: function() {
+            window.onscroll = function() {}; 
+            document.body.style.overflowY = "auto";
+
+            this.expanded = false;
+            var ytPlayer = document.getElementById("ytPlayer");
+            ytPlayer.style.position = "relative";
+            ytPlayer.style.pointerEvents = "none";
+            ytPlayer.style.width = "179px";
+            ytPlayer.style.height = "100px";
+            ytPlayer.style.bottom = "0";
         },
         ...mapMutations([
             'SET_VIDEO',
@@ -259,10 +273,17 @@ export default {
         if(this.$cookie.get('volume')) {
             this.volume = this.$cookie.get('volume');
         }
+        // Some mobile test I found
+        if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+            console.log("Detected mobile device!");
+            this.mobile = true;
+        }
     },
     watch: {
         volume() {
             this.$cookie.set('volume', this.volume, { expires: '2Y' });
+            if(this.volume == 0) {this.mute()}
+            if(this.volume > 0 && this.muted) {this.unMute()}
         }
     }
 }
@@ -270,6 +291,31 @@ export default {
 
 <style scoped>
 /* This is a mess.. */
+
+#MOBILEDETECTED {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    padding-top: 30vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+#MOBILEDETECTED button {
+    background-color: rgb(168, 61, 61);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 30px 10px 30px;
+    width: 200px;
+    color: white;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 10px 0 0 5px;
+}
 
 .listAdd {
     position: fixed;
@@ -293,7 +339,7 @@ export default {
     background: transparent;
 }
 #listAddBG {
-    background-color: rgb(30, 30, 30);
+    background-color: rgb(25, 25, 25);
     width: 300px;
     height: auto;
     padding: 20px;
@@ -323,10 +369,32 @@ export default {
     color: rgb(139, 139, 139);
 }
 
-.player {
+#expandIcon {
+    color: white;
+    position: absolute;
+    margin-left: -25px;
+    width: 25px;
+    height: 25px;
+    z-index: 6;
+    cursor: pointer;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.8));
+}
+#minimizeIcon {
+    color: white;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 30px;
+    height: 30px;
+    z-index: 6;
+    cursor: pointer;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.8));
+}
+
+#player {
     position: fixed;
     bottom: 0;
-    background-color: rgb(35, 35, 35);
+    background-color: rgb(25, 25, 25);
     width: 100%;
     padding: 0 0 0 0;
     height: 90px;
@@ -336,6 +404,7 @@ export default {
     margin: 0 auto;
     box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.4);
     user-select: text;
+    z-index: 2;
 }
 .img {
     width: 100px;
@@ -344,21 +413,18 @@ export default {
     display: block;
 }
 .info {
-    width: 400px;
-    min-width: 165px;
+    width: 550px;
+    min-width: 300px;
     text-align: left;
-    padding: 0 0 0 15px;
+    padding: 0 0 0 0;
 }
-.title {
+#title {
     font-size: 14px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     padding: 8px 0 0 0;
     line-height: 1.2;
-}
-#moreIcon {
-    display: none;
 }
 .infoBtn {
     color: rgb(212, 212, 212);
@@ -367,14 +433,14 @@ export default {
 }
 .infoBtn:hover {
     cursor: pointer;
-    color: rgb(177, 58, 58);
+    color: rgb(168, 61, 61);
 }
 .controls {
     background-color: none;
     width: 650px;
-    min-width: 340px;
+    min-width: 300px;
     text-align: center;
-    padding: 13px 20px 0 20px;
+    padding: 13px 5px 0 20px;
 }
 #play, #pause {
     width: 37px;
@@ -400,7 +466,7 @@ export default {
     padding: 0 20px 0 20px;
 }
 #repeatO {
-    color: rgb(177, 58, 58);
+    color: rgb(168, 61, 61);
 }
 #progress-bar {
     background-color: rgb(212, 212, 212);
@@ -453,8 +519,8 @@ export default {
     bottom: 15px
 }
 .modifiers {
-    width: 400px;
-    min-width: 165px;
+    width: 550px;
+    min-width: 300px;
     text-align: right;
     padding: 25px 15px 0 0;
 }
@@ -498,236 +564,5 @@ export default {
     background-color: rgb(168, 61, 61);
     border-radius: 20px;
     height: 7px;
-}
-#mobileExpanded {
-    display: none;
-}
-
-/*mobile */
-@media (max-width: 500px) {
-    .img {
-        display: none;
-    }
-    .player {
-        flex-direction: column-reverse;
-        height: 60px;
-        user-select: text;
-    }
-    .controls {
-        width: 100%;
-        padding: 0;
-        margin: 0 auto -32px auto;
-    }
-    .ctrlIcon {
-        width: 33px;
-        height: 33px;
-        float:  right;
-        padding: 0;
-        margin-top: 22px;
-    }
-    #back, #forward, #add, #repeat, #repeatO {
-        display: none;
-    }
-    #seekbar {
-        padding: 0 0 0 0;
-        margin: 7px 0 0 0;
-        height: 5px;
-        cursor: unset;
-    }
-    #progress-bar {
-        border-radius: 0;
-        height: 5px;
-        top: -5px;
-    }
-    #bar-bg {
-        border-radius: 0;
-        height: 5px;
-    }
-    #placeholder-bar {
-        border-radius: 0;
-        height: 5px;
-    }
-    .progress, .duration {
-        display: none;
-    }
-    .info {
-        display: block;
-        margin-bottom: 10px;
-    }
-    .infoBtn {
-        display: none;
-    }
-    .title {
-        padding: 0;
-        margin-bottom: 10px;
-        max-width: 250px;
-        font-size: 12px;
-        margin-left: 30px;
-    }
-    #moreIcon {
-        color: rgb(163, 163, 163);
-        display: block;
-        margin-bottom: -31px;
-        margin-left: -5px;
-        pointer-events: none;
-        height: 25px;
-        width: 25px;
-    }
-    .modifiers {
-        display: none;
-    }
-
-    #mobileExpanded {
-        display: block;
-        width: 100%;
-        height: 100%;
-        background-color:rgb(35, 35, 35);
-        position: fixed;
-        bottom: -100%;
-        z-index: 10;
-        transition: bottom .2s ease-out;
-        text-align: center;
-        padding: 0;
-        user-select: none;
-    }
-    .mobileImg {
-        width: 85%;
-        display: block;
-        margin: auto;
-        border-radius: 5px;
-    }
-    .closeArea {
-        height: 50px;
-        display: flex;
-        flex-direction: row;
-        user-select: none;
-    }
-    .mobileInfo {
-        position: absolute;
-        width: 100%;
-        top: 20%;
-    }
-    #mobileTitle {
-        font-size: 15px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        line-height: 1.2;
-        width: 85%;
-        margin: 20px auto auto auto;
-    }
-    .mobileControl {
-        width: 100%;
-        position: absolute;
-        bottom: 15%;
-    }
-    #closeMoreIcon {
-        color: rgb(163, 163, 163);
-        display: block;
-        pointer-events: none;
-        margin-top: 15px;
-        margin-left: 10px;
-        height: 25px;
-        width: 25px;
-    }
-    #closeMoreTitle {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        line-height: 1.2;
-        font-size: 12px;
-        text-align: left;
-        margin: 21px 0 0 15px;
-        max-width: 250px;
-        color: rgb(163, 163, 163);
-    }
-    .mobileCtrlL {
-        color: rgb(226, 226, 226);
-        height: 45px;
-        width: 45px;
-        padding: 0 10px 0 0;
-        margin-bottom: -9px;
-        cursor: pointer;
-    }
-    #mobileAdd, #mobileRepeat, #mobileRepeatO {
-        height: 25px;
-        width: 25px;
-        margin: 0 10px 1px 10px;
-    }
-    #mobileRepeatO{
-        color: rgb(177, 58, 58);
-    } 
-    .mobileCtrlR {
-        color: rgb(226, 226, 226);
-        height: 45px;
-        width: 45px;
-        padding: 0 0 0 10px;
-        margin-bottom: -9px;
-        cursor: pointer;
-    }
-    .mobileCtrlC {
-        color: rgb(226, 226, 226);
-        height: 50px;
-        width: 50px;
-        margin: 0 -10px 0 -10px;
-        margin-bottom: -12px;
-        cursor: pointer; 
-    }
-    .progress2 {
-        display: inline-block;
-        margin-right: 10px;
-        color: rgb(226, 226, 226);
-    }
-    .duration2 {
-        display: inline-block;
-        margin-left: 10px;
-        color: rgb(226, 226, 226);
-    }
-
-    #mobileProgress-bar {
-        background-color: rgb(212, 212, 212);
-        height: 9px;
-        position: relative;
-        top: -9px;
-        border-radius: 10px;
-    }
-    #mobileBar-bg {
-        width: 100%;
-        height: 9px;
-        background-color: rgb(50, 50, 50);
-        border-radius: 10px;
-    }
-    #mobileSeekbar {
-        height: 9px;
-        padding: 5px 0 12% 0;
-        cursor: pointer;
-        width: 85%;
-        margin: auto;
-    }
-    #mobilePlaceholder-bar {
-        width: 100%;
-        height: 9px;
-        background-color: rgb(60, 60, 60);
-        border-radius: 10px;
-        cursor: progress;
-    }
-    .mobileProgress {
-        padding: 0;
-        margin: 0;
-        float: left;
-        font-size: 10px;
-        color: rgb(218, 218, 218);
-        position: relative;
-        bottom: 15px;
-    }
-    .mobileDuration {
-        padding: 0;
-        margin: 0;
-        float: right;
-        font-size: 10px;
-        color: rgb(218, 218, 218);
-        position: relative;
-        bottom: 15px
-    }
 }
 </style>

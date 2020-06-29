@@ -5,12 +5,12 @@
         <button id="listConfirm" v-on:click="editList()"><SaveIcon class="icons" /></button>
         <button id="listCancel" v-on:click="cancel()"><XSquareIcon class="icons" /></button>
         <button id="listRemove" v-on:click="confirmation=true"><TrashIcon class="icons" /></button>
-        <div class="results">
+        <div id="results">
             <p>Sort items by dragging. Remove items by clicking the trash can.</p>
             <div class="result" v-for="(object,index) in songs" v-bind:key="index" draggable="true" v-on:dragstart="dragStart(songs[index].order)" v-on:dragend="dragEnd()" v-on:dragover="dragOver(songs[index].order)">
                 <div v-if="target == index+1 && target < draggable" id="lineA"></div>
                 <div v-if="target == index+1 && target > draggable" id="line"></div>
-                <img class="image" v-bind:src="songs[index].video.snippet.thumbnails.default.url">
+                <img class="image" v-bind:src="songs[index].video.snippet.thumbnails.medium.url">
                 <button class="nBtn">{{ index+1 }}</button>
                 <button v-on:click.stop v-on:click="removeVideo(songs[index].id)" class="oBtn">🗑️</button>
                 <p class="title">{{ songs[index].video.snippet.title }}</p>
@@ -48,7 +48,9 @@ export default {
             draggable: null,
             target: null,
             toRemove: [],
-            confirmation: false
+            confirmation: false,
+            ogListName: "",
+            ogSongs: []
         }
     },
     methods: {
@@ -67,7 +69,6 @@ export default {
         removeVideo: async function(theId) {
             this.toRemove.push(theId);
             var removeIndex = this.songs.map(function(a) { return a.id; }).indexOf(theId);
-            console.log(removeIndex);
             for(let i = removeIndex; i < this.songs.length; i++) {
                 this.songs[i].order -= 1;
             }
@@ -84,23 +85,29 @@ export default {
             this.$router.push('/home');
         },
         editList: async function() {
-            for(let i = 0; i < this.toRemove.length; i++) {
-                await axios(process.env.VUE_APP_SERVER_ADDRESS + '/remove', {
+            if(this.toRemove.length > 0) {
+                for(let i = 0; i < this.toRemove.length; i++) {
+                    await axios(process.env.VUE_APP_SERVER_ADDRESS + '/remove', {
+                        method: "post",
+                        data: {type: 'video', id: this.toRemove[i]},
+                        withCredentials: true
+                    });
+                }
+            }
+            if(this.songs != this.ogSongs) {
+                await axios(process.env.VUE_APP_SERVER_ADDRESS + '/edit', {
                     method: "post",
-                    data: {type: 'video', id: this.toRemove[i]},
+                    data: {type: 'list', items: this.songs},
                     withCredentials: true
                 });
             }
-            await axios(process.env.VUE_APP_SERVER_ADDRESS + '/edit', {
-                method: "post",
-                data: {type: 'list', items: this.songs},
-                withCredentials: true
-            });
-            await axios(process.env.VUE_APP_SERVER_ADDRESS + '/edit', {
-                method: "post",
-                data: {type: 'listname', id: this.listId, list: this.listName},
-                withCredentials: true
-            });
+            if(this.listName != this.ogListName) {
+                await axios(process.env.VUE_APP_SERVER_ADDRESS + '/edit', {
+                    method: "post",
+                    data: {type: 'listname', id: this.listId, list: this.listName},
+                    withCredentials: true
+                });
+            }
             this.CLEAR_VIDEO();
             this.SET_SHUFFLE(false);
             this.$router.push('/list?l=' + this.listId);
@@ -164,7 +171,7 @@ export default {
     z-index: 100;
     width: 100%;
     height: 100%;
-    padding-top: 40vh;
+    padding-top: 35vh;
     background-color: rgba(0, 0, 0, 0.5);
     text-align: center;
 }
@@ -187,16 +194,16 @@ export default {
     color: rgb(139, 139, 139);
 }
 .removeConfirm #confirmBG {
-    background-color: rgb(30, 30, 30);
+    background-color: rgb(25, 25, 25);
     width: 300px;
     height: auto;
-    padding: 20px;
+    padding: 5px 20px 20px 20px;
     margin: auto;
     border-radius: 10px;
 }
 
 #listName {
-    background-color:rgb(30, 30, 30);
+    background-color:rgb(25, 25, 25);
     font-size: 20px;
     border: none;
     color: white;
@@ -243,27 +250,27 @@ export default {
     height: 16px;
     margin-bottom: -3px;
 }
-.results {
+#results {
     padding-bottom: 100px;
 }
 #line {
-    border-bottom: 2px solid rgb(168, 61, 61);
-    width: 76.5%;
+    height: 2px;
+    width: 80vw;
+    background-color: rgb(168, 61, 61);
     position: absolute;
-    display: block;
-    margin-top: 52px;
+    margin-top: 49px;
 }
 #lineA {
-    border-bottom: 2px solid rgb(168, 61, 61);
-    width: 76.5%;
+    height: 2px;
+    width: 80vw;
+    background-color: rgb(168, 61, 61);
     position: absolute;
-    display: block;
-    margin-top: -52px;
+    margin-top: -49px;
 }
 .result {
     background-color: rgb(20, 20, 20);
     margin: 5px auto 5px auto;
-    height: 50px;
+    height: 45px;
     width: 100%;
     display: flex;
     border-radius: 5px;
@@ -312,28 +319,8 @@ export default {
     color: white;
 }
 .container {
-    /* +180px from left is the sidebar width */
-    margin-left: 200px;
-    margin-right: 20px;
+    margin-left: 10vw;
+    margin-right: 10vw;
     margin-top: 80px;
-}
-@media (max-width: 860px) {
-    .container {
-        margin-top: 75px;
-        margin-left: 75px;
-        margin-right: 10px;
-    }
-}
-@media (max-width: 500px) {
-    .nBtn {
-        display: none;
-    }
-    .oBtn {
-        display: block;
-        background-color: rgb(20, 20, 20);
-    }
-    .result:hover .oBtn {
-        background-color: rgb(25, 25, 25);
-    }
 }
 </style>

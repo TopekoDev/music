@@ -96,16 +96,16 @@ export default {
 
 <style scoped>
 .container {
-    /* +180px from left is the sidebar width and top margin is the navbar*/
-    margin-left: 200px;
+    margin-left: 10vw;
+    margin-right: 10vw;
     margin-top: 80px;
     margin-bottom: 110px;
 }
 #keyInput {
-    background-color:rgb(255, 255, 255);
+    background-color: rgb(25, 25, 25);
     font-size: 15px;
     border: none;
-    color: rgb(0, 0, 0);
+    color: white;
     height: 35px;
     width: 50%;
     max-width: 350px;
@@ -114,34 +114,34 @@ export default {
     border-radius: 2px;
 }
 #keySubmit {
-    background-color: rgb(255, 255, 255);
+    background-color: rgb(168, 61, 61);
     border: none;
-    color: rgb(0, 0, 0);
+    color: white;
     border-radius: 2px;
     cursor: pointer;
     height: 35px;
     margin-left: 5px;
 }
 #logoutBtn {
-    background-color: rgb(255, 255, 255);
+    background-color: rgb(168, 61, 61);
     border: none;
-    color: rgb(0, 0, 0);
+    color: white;
     border-radius: 2px;
     cursor: pointer;
     height: 35px;
 }
 #dataBtn {
-    background-color: rgb(255, 255, 255);
+    background-color: rgb(168, 61, 61);
     border: none;
-    color: rgb(0, 0, 0);
+    color: white;
     border-radius: 2px;
     cursor: pointer;
     height: 35px;
 }
 #removeAccBtn {
-    background-color: rgb(255, 255, 255);
+    background-color: rgb(168, 61, 61);
     border: none;
-    color: rgb(0, 0, 0);
+    color:white;
     border-radius: 2px;
     cursor: pointer;
     height: 35px;
@@ -149,11 +149,5 @@ export default {
 .links a {
     color: rgb(38, 141, 189);
     font-size: 15px;
-}
-@media (max-width: 860px) {
-    .container {
-        margin-top: 75px;
-        margin-left: 75px;
-    }
 }
 </style>
