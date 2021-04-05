@@ -39,7 +39,7 @@ export default {
 
 <style scoped>
 .navbar {
-    background-color: rgb(25, 25, 25);
+    background-color: rgb(20, 20, 20);
     width: 100%;
     position: fixed;
     top: 0;

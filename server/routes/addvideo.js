@@ -14,7 +14,7 @@ router.post('/', verify, async (req, res) => {
             //set order for new video
             var theOrder = data[0].videos.length+1;
             //add video to database
-            await List.findByIdAndUpdate(req.body.list, {$push: {videos: {video: req.body.video, order: theOrder, id: theId}}}, {safe: true, upsert: true});
+            await List.findOneAndUpdate({_id: req.body.list, owner: req.user.id}, {$push: {videos: {video: req.body.video, order: theOrder, id: theId}}}, {safe: true, upsert: true});
             res.send("success");
         });
     } catch(error) {

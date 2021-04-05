@@ -1,5 +1,6 @@
 <template>
     <div class="container">
+        <h2 style="font-size: 18px;">Search results</h2>
         <div class="results">
             <div class="result" @click="setVideo(searchResults[index])" v-for="(object,index) in searchResults" v-bind:key="index">
                 <img class="image" v-bind:src="searchResults[index].snippet.thumbnails.default.url">
@@ -197,13 +198,14 @@ export default {
     border: none;
     border-radius: 10px;
     padding: 10px 30px 10px 30px;
-    width: 200px;
+    width: 250px;
     color: white;
     cursor: pointer;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     margin: 10px 0 0 5px;
+    font-size: 15px;
 }
 #cancel {
     padding: 10px 30px 10px 30px;
@@ -213,6 +215,7 @@ export default {
     border: none;
     border-radius: 10px;
     color: rgb(139, 139, 139);
+    font-size: 15px;
 }
 .container {
     margin-left: 10vw;
@@ -234,7 +237,7 @@ export default {
     padding-bottom: 90px;
 }
 .result {
-    background-color: rgb(20, 20, 20);
+    background-color: rgb(30, 30, 30);
     margin: 5px auto 5px auto;
     height: 50px;
     width: 100%;
@@ -244,7 +247,7 @@ export default {
     cursor: pointer;
 }
 .result:hover {
-    background-color: rgb(25, 25, 25);
+    background-color: rgb(27, 27, 27);
 }
 .image {
     height: 100%;
@@ -258,7 +261,7 @@ export default {
     padding: 0 10px 0 0px;
 }
 .nBtn {
-    background-color: rgb(20, 20, 20);
+    background-color: rgb(30, 30, 30);
     border: none;
     color: rgb(196, 196, 196);
     height: 100%;
@@ -272,7 +275,7 @@ export default {
     display: block;
 }
 .oBtn {
-    background-color: rgb(25, 25, 25);
+    background-color: rgb(27, 27, 27);
     border: none;
     color: rgb(196, 196, 196);
     height: 100%;

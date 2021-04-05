@@ -11,8 +11,8 @@ router.post('/', verify, async (req, res) => {
         try {
             // (if you know better way, please tell me :)
             for(i = 0; i < req.body.videos.length; i++) {
-                await List.findByIdAndUpdate(req.body.list, {$pull: {videos: {id: req.body.videos[i].id}}}, {safe: true});
-                await List.findByIdAndUpdate(req.body.list, {$push: {videos: req.body.videos[i]}}, {safe: true, upsert: true});
+                await List.findOneAndUpdate({_id: req.body.list, owner: req.user.id}, {$pull: {videos: {id: req.body.videos[i].id}}}, {safe: true});
+                await List.findOneAndUpdate({_id: req.body.list, owner: req.user.id}, {$push: {videos: req.body.videos[i]}}, {safe: true, upsert: true});
             }
             res.send("success");
         } catch(error) {

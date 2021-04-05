@@ -364,13 +364,14 @@ export default {
     border: none;
     border-radius: 10px;
     padding: 10px 30px 10px 30px;
-    width: 200px;
+    width: 250px;
     color: white;
     cursor: pointer;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     margin: 10px 0 0 5px;
+    font-size: 15px;
 }
 #cancel {
     padding: 10px 30px 10px 30px;
@@ -380,6 +381,7 @@ export default {
     border: none;
     border-radius: 10px;
     color: rgb(139, 139, 139);
+    font-size: 15px;
 }
 
 #expandIcon {

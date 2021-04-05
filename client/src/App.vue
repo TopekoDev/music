@@ -48,6 +48,6 @@ body {
     margin: 0;
     padding: 0;
     font-family:Arial, Helvetica, sans-serif;
-    background-color: rgb(15, 15, 15);
+    background-color: rgb(20, 20, 20);
 }
 </style>

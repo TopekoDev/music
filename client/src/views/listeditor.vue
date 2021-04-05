@@ -1,11 +1,11 @@
 <template>
-    <div class="container">
+    <div class="container" v-if="listOwner === userId">
         <input id="listName" autocomplete="off" name="name" type="text" placeholder="" v-model="listName" />
         <p id="listInfo">{{ videos.length }} videos</p>
         <button id="listConfirm" v-on:click="editList()"><SaveIcon class="icons" /></button>
         <button id="listCancel" v-on:click="cancel()"><XSquareIcon class="icons" /></button>
         <button id="listRemove" v-on:click="confirmation=true"><TrashIcon class="icons" /></button>
-        <div id="results">
+        <div id="results" v-if="videos.length > 0">
             <p>Sort items by dragging. Remove items by clicking "-".</p>
             <div class="result" v-for="(object,index) in videos" v-bind:key="index" draggable="true" v-on:dragstart="dragStart(videos[index].order)" v-on:dragend="dragEnd()" v-on:dragover="dragOver(videos[index].order)">
                 <div v-if="target == index+1 && target < draggable" id="lineA"></div>
@@ -16,6 +16,7 @@
                 <p class="title">{{ videos[index].video.snippet.title }}</p>
             </div>
         </div>
+        <p style="color: grey;" v-if="videos.length < 1">List is empty!</p>
 
         <div class="removeConfirm" v-if="confirmation">
             <div id="confirmBG">
@@ -50,10 +51,20 @@ export default {
             toRemove: [],
             confirmation: false,
             ogListName: "",
-            ogvideos: []
+            ogvideos: [],
+            listOwner: "",
+            userId: ""
         }
     },
     methods: {
+        init: async function() {
+            this.listId = this.$route.query.l;
+            await this.getVideos();
+            await this.getUser();
+            if(this.listOwner !== this.userId) {
+                this.$router.push('/home');
+            }
+        },
         getVideos: async function() {
             const theList = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/list', {
                 method: "post",
@@ -63,9 +74,21 @@ export default {
             this.videos = theList.data[0].videos;
             this.videos.sort((a, b) => a.order - b.order);
             this.listName = theList.data[0].name;
+            this.listOwner = theList.data[0].owner;
+        },
+        getUser: async function() {
+            const theUser = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/user', {
+                method: "get",
+                withCredentials: true
+            });
+            this.userId = theUser.data[0]._id;
         },
         cancel: function() {
-            this.$router.push('/list?l=' + this.listId);
+            if(this.videos.length > 0) {
+                this.$router.push('/list?l=' + this.listId);
+            } else {
+                this.$router.push('/home');
+            }
         },
         removeVideo: async function(theId) {
             this.toRemove.push(theId);
@@ -104,7 +127,11 @@ export default {
             }
             this.CLEAR_VIDEO();
             this.SET_SHUFFLE(false);
-            this.$router.push('/list?l=' + this.listId);
+            if(this.videos.length > 0) {
+                this.$router.push('/list?l=' + this.listId);
+            } else {
+                this.$router.push('/home');
+            }
         },
         dragStart: function(item) {
             this.draggable = item;
@@ -145,13 +172,11 @@ export default {
         ])
     },
     mounted() {
-        this.listId = this.$route.query.l;
-        this.getVideos();
+        this.init();
     },
     watch: {
         $route() {
-            this.listId = this.$route.query.l;
-            this.getVideos();
+            this.init();
         },
     }
 }
@@ -197,7 +222,7 @@ export default {
 }
 
 #listName {
-    background-color:rgb(25, 25, 25);
+    background-color: rgb(30, 30, 30);
     font-size: 20px;
     border: none;
     color: white;
@@ -265,7 +290,7 @@ export default {
     margin-top: -49px;
 }
 .result {
-    background-color: rgb(20, 20, 20);
+    background-color: rgb(30, 30, 30);
     margin: 5px auto 5px auto;
     height: 45px;
     width: 100%;
@@ -275,7 +300,7 @@ export default {
     cursor: move;
 }
 .result:hover {
-    background-color: rgb(25, 25, 25);
+    background-color: rgb(27, 27, 27);
 }
 .image {
     height: 100%;
@@ -289,7 +314,7 @@ export default {
     padding: 0 10px 0 0px;
 }
 .nBtn {
-    background-color: rgb(20, 20, 20);
+    background-color: rgb(30, 30, 30);
     border: none;
     color: rgb(196, 196, 196);
     height: 100%;
@@ -303,7 +328,7 @@ export default {
     display: block;
 }
 .oBtn {
-    background-color: rgb(25, 25, 25);
+    background-color: rgb(27, 27, 27);
     border: none;
     color: rgb(196, 196, 196);
     height: 100%;

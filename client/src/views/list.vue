@@ -1,10 +1,13 @@
 <template>
-    <div class="container">
-        <p id="listName">{{ listName }}</p>
-        <p id="listInfo">{{ videos.length }} tracks</p>
-        <button id="listPlay" v-on:click="playList(0)">Play</button>
-        <button id="listShuffle" v-on:click="shuffleList()"><ShuffleIcon class="icons"/></button>
-        <button id="listEdit" v-on:click="editList()"><Edit2Icon class="icons"/></button>
+    <div class="container" v-if="videos.length > 0">
+        <img id="listImg" v-bind:src="videos[0].video.snippet.thumbnails.medium.url">
+        <div id="listInfo">
+            <p id="listName">{{ listName }}</p>
+            <p id="listTracks">{{ videos.length }} tracks</p>
+            <button id="listPlay" v-on:click="playList(0)">Play</button>
+            <button id="listShuffle" v-on:click="shuffleList()"><ShuffleIcon class="icons"/></button>
+            <button v-if="listOwner === userId" id="listEdit" v-on:click="editList()"><Edit2Icon class="icons"/></button>
+        </div>
         <div class="results">
             <div class="result" v-on:click="playList(index)" v-for="(object,index) in videos" v-bind:key="index">
                 <img class="image" v-bind:src="videos[index].video.snippet.thumbnails.medium.url">
@@ -34,10 +37,23 @@ export default {
             listId: "",
             videos: [],
             listName: "",
-            listOwner: ""
+            listOwner: "",
+            listPublic: Boolean,
+            userId: "",
         }
     },
     methods: {
+        init: async function() {
+            this.listId = this.$route.query.l;
+            await this.getVideos();
+            await this.getUser();
+            if((this.listOwner !== this.userId) && (this.listPublic != true)) {
+                this.$router.push('/home');
+            }
+            if(this.videos.length < 1) {
+                this.editList();
+            }
+        },
         playList: function(index) {
             if(this.videos.length > 0) {
                 if(this.shuffle) {
@@ -77,6 +93,18 @@ export default {
             this.videos.sort((a, b) => a.order - b.order);
             this.listName = theList.data[0].name;
             this.listOwner = theList.data[0].owner;
+            this.listPublic = theList.data[0].public;
+        },
+        getUser: async function() {
+            const theUser = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/user', {
+                method: "get",
+                withCredentials: true
+            });
+            if(theUser.data[0] === undefined) {
+                this.userId = "demo";
+            } else {
+                this.userId = theUser.data[0]._id;
+            }
         },
         editList: function() {
             this.$router.push('/edit?l=' + this.listId);
@@ -102,13 +130,11 @@ export default {
         ])
     },
     mounted() {
-        this.listId = this.$route.query.l;
-        this.getVideos();
+        this.init();
     },
     watch: {
         $route() {
-            this.listId = this.$route.query.l;
-            this.getVideos();
+            this.init();
         },
     }
 }
@@ -119,15 +145,27 @@ export default {
     margin-top: -120px;
     color: rgb(139, 139, 139);
 }
-#listName {
-    font-size: 30px;
-    margin: 0;
-    word-wrap: break-word;
+#listImg {
+    height: 150px;
+    width: auto;
+    margin-bottom: -14px;
+    margin-top: 10px;
+    border-radius: 5px;
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.6));
 }
 #listInfo {
+    display: inline-block;
+    margin: 0 0 20px 30px;
+}
+#listName {
+    font-size: 30px;
+    margin: 0 0 10px 0;
+    word-wrap: break-word;
+}
+#listTracks {
     font-size: 15px;
     color: rgb(139, 139, 139);
-    margin: 5px 0 0 0;
+    margin: 10px 0 10px 0;
 }
 #listPlay {
     background-color: rgb(168, 61, 61);
@@ -136,7 +174,7 @@ export default {
     padding: 0 30px 0 30px;
     height: 38px;
     color: white;
-    margin: 10px 5px 0 0;
+    margin: 0 5px 0 0;
     cursor: pointer;
     font-size: 15px;
 }
@@ -147,7 +185,7 @@ export default {
     padding: 0 30px 0 30px;
     height: 38px;
     color: white;
-    margin: 10px 5px 0 0;
+    margin: 0 5px 0 0;
     cursor: pointer;
 }
 #listEdit {
@@ -157,7 +195,7 @@ export default {
     padding: 0 30px 0 30px;
     height: 38px;
     color: white;
-    margin: 10px 5px 0 0;
+    margin: 0 5px 0 0;
     cursor: pointer;
 }
 .icons {
@@ -169,7 +207,7 @@ export default {
     padding: 10px 0 120px 0;
 }
 .result {
-    background-color: rgb(20, 20, 20);
+    background-color: rgb(30, 30, 30);
     margin: 5px auto 5px auto;
     height: 45px;
     width: 100%;
@@ -179,7 +217,7 @@ export default {
     cursor: pointer;
 }
 .result:hover {
-    background-color: rgb(25, 25, 25);
+    background-color: rgb(27, 27, 27);
 }
 .image {
     height: 100%;
@@ -193,7 +231,7 @@ export default {
     padding: 0 10px 0 0px;
 }
 .nBtn {
-    background-color: rgb(20, 20, 20);
+    background-color: rgb(30, 30, 30);
     border: none;
     color: rgb(196, 196, 196);
     height: 100%;
@@ -203,7 +241,7 @@ export default {
 }
 .result:hover .nBtn {
     color: white;
-    background-color: rgb(25, 25, 25);
+    background-color: rgb(27, 27, 27);
 }
 .container {
     margin-left: 10vw;
