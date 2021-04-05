@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="centered">
-      <h1>Login to your account</h1>
+      <h1>Log in</h1>
       <form v-on:submit.prevent="login">
         <input class="inField" autocomplete="off" name="username" type="text" placeholder="username" v-model="username" />
         <br/>
@@ -85,7 +85,7 @@ export default {
     background-color: rgb(168, 61, 61);
     border: none;
     border-radius: 10px;
-    margin: 10px 0 0 36px;
+    margin: 10px 0 0 35px;
     padding: 10px 30px 10px 30px;
     color: white;
 }
@@ -93,11 +93,12 @@ export default {
     background-color: rgb(25, 25, 25);
     border: none;
     border-radius: 10px;
-    margin: 10px 36px 0 0;
+    margin: 10px 35px 0 0;
     padding: 10px 30px 10px 30px;
     color: rgb(139, 139, 139);
 }
 button {
     cursor: pointer;
+    font-size: 15px;
 }
 </style>

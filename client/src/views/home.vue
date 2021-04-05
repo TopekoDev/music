@@ -5,26 +5,35 @@
             <p>If you want to add songs to a playlist <a href="/login">Login</a> or <a href="/register">Create account</a>.</p>
         </div>
         <div v-if="loggedIn">
-            <h1 style="font-size: 30px;">Home</h1>
+            <div id="banner">
+                <h1>Home</h1>
+            </div>
+            <h1 style="font-size: 30px;">Your music</h1>
+            <div class="line" style="width: 100%; margin-top: -10px;"></div>
+            <h2 style="font-size: 18px;">Recently played</h2>
             <h2 style="font-size: 18px;">Lists</h2>
-            <div class="lists">
-            <div class="list" v-on:click="navigate('list?l=' + lists[index].id)" v-for="(object,index) in lists" v-bind:key="index">
-                <ListIcon class="listIcon"/>
-                <p class="listName">{{ lists[index].name }}</p>
+            <div id="listsGrid">
+                <div class="list" @click="navigate('list?l=' + lists[index]._id)" v-for="(object,index) in lists" v-bind:key="index">
+                    <ListIcon class="listIcon"/>
+                    <p class="listName">{{ lists[index].name }}</p>
+                </div>
+                <div class="list" id="addlist" @click="createListDialog(true)">
+                    <PlusIcon class="listIcon"/>
+                    <p class="listName">New List</p>
+                </div>
             </div>
-            <div class="list" id="addlist" v-on:click="listCreator = true">
-                <PlusIcon class="listIcon"/>
-                <p class="listName">New List</p>
-            </div>
-            </div>
+            <h2 style="font-size: 18px;">Favourited lists</h2>
+            <br>
+            <h1 style="font-size: 30px;">Explore</h1>
+            <div class="line" style="width: 100%; margin-top: -10px;"></div>
         </div>
-        <div class="newList" v-if="listCreator">
+        <div id="createList">
             <div id="createListBG">
-                <div class="createList">
+                <div>
                     <input id="field" class="inField" v-on:keyup.enter="createList" autocomplete="off" name="name" type="text" placeholder="Enter list name..." v-model="listName" />
                     <br/><br>
-                    <button id="create" v-on:click="createList">Create</button>
-                    <button id="cancel" v-on:click="listCreator=false; listName=''">Cancel</button>
+                    <button id="create" @click="createList">Create</button>
+                    <button id="cancel" @click="createListDialog(false)">Cancel</button>
                 </div>
             </div>
         </div>
@@ -45,35 +54,43 @@ export default {
         return {
             loggedIn: false,
             lists: [],
-            listCreator: false,
             listName: ""
         }
     },
     methods: {
-        getLists: async function() {
-            const theUser = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/user', {
+        navigate: function(route) {
+            this.$router.push('/' + route);
+        },
+        getUserLists: async function() {
+            const theLists = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/userlists', {
                 method: "get",
                 withCredentials: true
             });
-            this.lists = theUser.data[0].lists;
+            this.lists = theLists.data;
             this.lists.sort(function(a, b) { 
                 return a.name > b.name ? 1 : -1;
             });
         },
-        navigate: function(route) {
-            this.$router.push('/' + route);
+        createListDialog: function(state) {
+            let element = document.getElementById("createList");
+            this.listName = "";
+            if(state) {
+                element.style.display = "block";
+                document.getElementById("field").focus();
+            } else {
+                element.style.display = "none";
+            }
         },
         createList: async function() {
             if(this.listName.length > 0) {
-                    const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/add', {
+                const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/createlist', {
                     method: "post",
-                    data: {type: 'list', list: this.listName},
+                    data: {name: this.listName, public: false},
                     withCredentials: true
                 });
                 console.log(response);
-                this.getLists();
-                this.listCreator = false;
-                this.listName = "";
+                this.createListDialog(false);
+                this.getUserLists();
             }
         },
         ...mapMutations([
@@ -83,7 +100,7 @@ export default {
     mounted() {
         if(this.$cookie.get('loggedin') == "true") {
             this.loggedIn = true;
-            this.getLists();
+            this.getUserLists();
         } else {
             this.loggedIn = false;
         }
@@ -92,8 +109,19 @@ export default {
 </script>
 
 <style scoped>
-
-.newList {
+#banner {
+    width: 100%;
+    height: 100px;
+    border-radius: 10px;
+    background: rgb(26,21,79);
+    background: linear-gradient(90deg, rgba(26,21,79,1) 0%, rgba(122,3,3,1) 43%, rgba(5,70,150,1) 100%);
+}
+#banner h1 {
+    font-size: 40px;
+    padding: 26px 0 0 50px;
+}
+#createList {
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -104,7 +132,7 @@ export default {
     background-color: rgba(0, 0, 0, 0.5);
     text-align: center;
 }
-.newList #create {
+#createList #create {
     background-color: rgb(168, 61, 61);
     border: none;
     border-radius: 10px;
@@ -113,7 +141,7 @@ export default {
     cursor: pointer;
     margin-right: 12px;
 }
-.newList #cancel {
+#createList #cancel {
     padding: 10px 30px 10px 30px;
     cursor: pointer;
     margin-left: 12px;
@@ -122,7 +150,7 @@ export default {
     border-radius: 10px;
     color: rgb(139, 139, 139);
 }
-.newList #field {
+#createList #field {
     background-color: rgb(25, 25, 25);
     font-size: 15px;
     border: none;
@@ -133,7 +161,7 @@ export default {
     padding: 0 5px 0 5px;
     border-radius: 2px;
 }
-.newList #createListBG {
+#createList #createListBG {
     background-color: rgb(25, 25, 25);
     width: 300px;
     height: auto;
@@ -141,11 +169,16 @@ export default {
     margin: auto;
     border-radius: 10px;
 }
-
+#listsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-column-gap: 10px;
+    grid-row-gap: 10px;
+}
 .list {
-    background-color: rgb(20, 20, 20);
+    background-color: rgb(30, 30, 30);
     margin: 5px auto 5px auto;
-    height: 70px;
+    height: 60px;
     width: 100%;
     display: flex;
     border-radius: 5px;
@@ -156,18 +189,20 @@ export default {
     background-color: rgb(25, 25, 25);
 }
 .listIcon {
-    height: 25px;
-    width: 25px;
     color: white;
-    padding: 0 0 0 10px;
-    border-radius: 5px 0 0 5px;
+    margin: 0 0 0 15px;
+    position: absolute;
 }
 .listName {
-    font-size: 18px;
+    font-size: 16px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 0 10px 0 10px;
+    padding: 0 10px 0 50px;
+}
+.line {
+    background-color: rgb(60, 60, 60);
+    height: 1px;
 }
 
 .container {

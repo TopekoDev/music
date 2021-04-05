@@ -2,18 +2,16 @@
     <div class="container">
         <h1>Settings</h1>
         <h2>YouTube API key (Required):</h2>
-        <p style="color: grey; font-size: 13px;">The key will be stored locally in a cookie.</p>
-        <input id="keyInput" v-model="apiKey" placeholder="Enter key.." type="text">
+        <p style="color: grey; font-size: 13px;">The key will be stored locally as a cookie.</p>
+        <input id="keyInput" v-model="apiKey" placeholder="Enter key..." type="text">
         <button id="keySubmit" v-on:click="submitKey">Submit</button>
         <p class="links"><a target="_blank" href="https://developers.google.com/youtube/v3/getting-started">Instructions</a></p>
         <input v-model="publicKey" v-on:click="publicKeyBox" type="checkbox" name="" id="pkc">
         <label for="pkc" style="color: white;">Use public key instead</label>
         <p style="color: grey; font-size: 13px;">The key has limited uses and might not always work!</p>
-        <br>
         <div v-if="loggedIn">
             <h2>Privacy</h2>
             <button style="margin-top: 5px;" id="dataBtn" v-on:click="viewData">View your data</button>
-            <br><br>
             <h2>Account</h2>
             <button id="logoutBtn" v-on:click="logout">Logout</button><br>
             <button style="margin-top: 5px;" id="removeAccBtn" v-on:click="removeAccount">Remove account and data</button>
@@ -60,13 +58,12 @@ export default {
         },
         removeAccount: async function() {
             //confirmation
-            if(confirm("Delete Account and all data? Cannot be undone!")) {
+            if(confirm("Delete account and all data forever? Cannot be undone!")) {
                 //logout first
                 this.logout();
                 //send account remove request
-                await axios(process.env.VUE_APP_SERVER_ADDRESS + '/account', {
-                    method: "post",
-                    data: {type: 'remove'},
+                await axios(process.env.VUE_APP_SERVER_ADDRESS + '/closeaccount', {
+                    method: "get",
                     withCredentials: true
                 });
             }

@@ -34,20 +34,18 @@
                 <input v-model="volume" type="range" name="volume" id="volume">
             </div>
         </div>
-
-        <div class="listAdd" v-if="listAdder">
+        <div id="listAdd">
             <div id="listAddBG">
                 <p style="margin: 0 0 10px 0; padding: 0;">Add to list</p>
                 <div class="innerlist">
                     <div v-for="(object,index) in lists" v-bind:key="index">
-                    <button id="list" v-on:click="addVideo(selectedVideo, lists[index].id)">{{ lists[index].name }}</button>
+                        <button class="list" @click="addVideo(selectedVideo, lists[index]._id)">{{ lists[index].name }}</button>
                     </div>
                     <br>
                 </div>
-                <button id="cancel" v-on:click="listAdder=false">Cancel</button>
+                <button id="cancel" @click="addVideoDialog(false)">Cancel</button>
             </div>
         </div>
-
     </div>
 </template>
 
@@ -77,36 +75,47 @@ export default {
             onRepeat: false,
             isPlaying: false,
             isCued: false,
-            listAdder: false,
             selectedVideo: "",
             lists: [],
             mobile: false,
             muted: false,
-            expanded: false,
-            warning: false
+            expanded: false
         }
     },
     methods: {
         addToList: function(video) {
-            this.getLists();
-            this.listAdder = true;
-            this.selectedVideo = video;
+            if(video.id.videoId != "none") {
+                this.selectedVideo = video;
+                this.getUserLists();
+                this.addVideoDialog(true);
+            }
         },
-        getLists: async function() {
-            const theUser = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/user', {
+        getUserLists: async function() {
+            const theLists = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/userlists', {
                 method: "get",
                 withCredentials: true
             });
-            this.lists = theUser.data[0].lists;
+            this.lists = theLists.data;
+            this.lists.sort(function(a, b) { 
+                return a.name > b.name ? 1 : -1;
+            });
+        },
+        addVideoDialog: function(state) {
+            let element = document.getElementById("listAdd");
+            if(state) {
+                element.style.display = "block";
+            } else {
+                element.style.display = "none";
+            }
         },
         addVideo: async function(video, theList) {
             let theVid = video;
-            const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/add', {
+            const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/addvideo', {
                 method: "post",
-                data: {type: 'video' ,list: theList, video: theVid},
+                data: {list: theList, video: theVid},
                 withCredentials: true
             });
-            this.listAdder = false;
+            this.addVideoDialog(false);
             this.selectedVideo = "";
             console.log(response);
         },
@@ -135,22 +144,18 @@ export default {
         playing: async function() {
             this.isCued = false;
             this.isPlaying = true;
-            if(!this.warning) {
-                let quality = await this.$refs.youtube.player.getPlaybackQuality();
-                switch (quality) {
-                    case "hd720": case "hd1080": case "highres":
-                        console.log(quality);
-                        alert("Quality lower than 720p is recommended.\nIt can be changed by expanding the video in the bottom left corner.\nPress 'OK' to not see this again.");
-                        this.warning = true;
-                        break;
-                }
-            }
         },
         paused: function() {
             this.isPlaying = false;
         },
         ended: function() {
+            //log video to history if enough completed
+            let completedPercentage = (this.progress * 100) / this.duration;
+            if(completedPercentage > 80) {
+                this.logVideo(this.ytInfo);
+            }
             this.isPlaying = false;
+            //decide what to do next
             if(this.onRepeat) {
                 this.playVideo();
             } else {
@@ -177,11 +182,18 @@ export default {
                         }
                     }
                 }
-            }  
+            }
         },
         cued: function() {
             this.isCued = true;
             this.playVideo();
+        },
+        logVideo: async function(video) {
+            await axios(process.env.VUE_APP_SERVER_ADDRESS + '/loghistory', {
+                method: "post",
+                data: {video: video},
+                withCredentials: true
+            });
         },
         barSeek: function(event) {
             if(window.innerWidth <= '500' && document.getElementById('mobileExpanded').style.bottom == '0px') {
@@ -317,7 +329,8 @@ export default {
     margin: 10px 0 0 5px;
 }
 
-.listAdd {
+#listAdd {
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -346,7 +359,7 @@ export default {
     margin: auto;
     border-radius: 10px;
 }
-#list {
+.list {
     background-color: rgb(168, 61, 61);
     border: none;
     border-radius: 10px;
@@ -378,6 +391,9 @@ export default {
     z-index: 6;
     cursor: pointer;
     filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.8));
+}
+#expandIcon:hover, #minimizeIcon:hover {
+    color: rgb(168, 61, 61);
 }
 #minimizeIcon {
     color: white;

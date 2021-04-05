@@ -97,7 +97,7 @@ export default {
     background-color: rgb(168, 61, 61);
     border: none;
     border-radius: 10px;
-    margin: 10px 0 0 28px;
+    margin: 10px 0 0 25px;
     padding: 10px 30px 10px 30px;
     color: white;
 }
@@ -105,11 +105,12 @@ export default {
     background-color: rgb(25, 25, 25);
     border: none;
     border-radius: 10px;
-    margin: 10px 28px 0 0;
+    margin: 10px 25px 0 0;
     padding: 10px 30px 10px 30px;
     color: rgb(139, 139, 139);
 }
 button {
     cursor: pointer;
+    font-size: 15px;
 }
 </style>

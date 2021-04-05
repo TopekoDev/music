@@ -4,12 +4,7 @@ const User = require("../models/user.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-//set environment variables
-const {
-    NODE_ENV, PORT, DB_URL, TOKEN_SECRET, CLIENT_DOMAIN
-} = process.env;
-
-//validation
+//validation schema
 const Joi = require('joi');
 const valSchema = {
   username: Joi.string().alphanum().min(3).max(20).required(),
@@ -31,11 +26,11 @@ router.post("/", async (req, res) => {
   //create token
   const token = jwt.sign({
     id: user._id, username: user.username, email: user.email
-  }, TOKEN_SECRET);
+  }, process.env.TOKEN_SECRET);
 
-  //send token back in a cookie
-  res.cookie('token', token, {maxAge: 1000*60*60*24*365*2, httpOnly: true, domain: CLIENT_DOMAIN});
-  res.cookie('loggedin', 'true', {maxAge: 1000*60*60*24*365*2, httpOnly: false, domain: CLIENT_DOMAIN});
+  //send token back as a cookie
+  res.cookie('token', token, {maxAge: 1000*60*60*24*365*2, httpOnly: true, domain: process.env.CLIENT_DOMAIN});
+  res.cookie('loggedin', 'true', {maxAge: 1000*60*60*24*365*2, httpOnly: false, domain: process.env.CLIENT_DOMAIN});
   //send details
   res.json({"msg":"Logged in as " + user.username,"status":"success"});
 });

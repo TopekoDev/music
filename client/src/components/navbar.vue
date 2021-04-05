@@ -5,7 +5,7 @@
             <a v-on:click="navigate('settings')"><SettingsIcon class="icon"/>Settings</a>
         </div>
         <div class="search">
-            <input v-on:keyup.enter="search" id="searchBar" v-model="searchField" placeholder="Search from YouTube..." type="text">
+            <input v-on:keyup.enter="search" id="searchBar" v-model="searchField" placeholder="Search YouTube or lists..." type="text">
             <button class="searchBtn" v-on:click="search"><SearchIcon id="sIcon"/></button>
         </div>
     </div>
@@ -59,14 +59,14 @@ export default {
     padding: 15px 30px 16px 0;
     text-decoration: none;
     cursor: pointer;
-    font-size: 18px;
+    font-size: 15px;
 }
 .navbar a:hover {
     color: rgb(168, 61, 61);
 }
 .icon {
-    height: 25px;
-    width: 25px;
+    height: 23px;
+    width: 23px;
     margin-bottom: -5px;
     margin-right: 5px;
 }

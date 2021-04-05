@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "dev": "eval $(cat .env) node app.js",
+    "dev": "eval $(cat .env.development) node app.js",
     "start": "eval $(cat .env.production) node app.js"
   },
   "author": "",

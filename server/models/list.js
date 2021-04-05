@@ -1,26 +1,27 @@
 const mongoose = require("mongoose");
 
 const theSchema = mongoose.Schema({
-  username: {
+  name: {
     type: String,
-    min: 3,
-    max: 20,
-    unique: true,
+    min: 1,
     required: true
   },
-  password: {
+  owner: {
     type: String,
-    min: 6,
-    max: 1024,
+    min: 1,
     required: true
+  },
+  public: {
+    type: Boolean,
+    required: true
+  },
+  videos: {
+    type: Array
   },
   date: {
     type: Date,
     default: Date.now
-  },
-  lists: {
-    type: Array
   }
 });
 
-module.exports = mongoose.model("users", theSchema);
+module.exports = mongoose.model("lists", theSchema);

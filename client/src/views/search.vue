@@ -1,24 +1,24 @@
 <template>
     <div class="container">
         <div class="results">
-            <div class="result" v-on:click="setVideo(searchResults[index])" v-for="(object,index) in searchResults" v-bind:key="index">
+            <div class="result" @click="setVideo(searchResults[index])" v-for="(object,index) in searchResults" v-bind:key="index">
                 <img class="image" v-bind:src="searchResults[index].snippet.thumbnails.default.url">
                 <button class="nBtn">{{ index+1 }}</button>
-                <button v-on:click.stop v-on:click="addToList(searchResults[index])" class="oBtn">+</button>
+                <button v-on:click.stop @click="addToList(searchResults[index])" class="oBtn">+</button>
                 <p class="title">{{ searchResults[index].snippet.title }}</p>
             </div>
-            <button v-if="searchResults.length > 0" class="loadBtn" v-on:click="loadMore">Load more</button>
+            <button v-if="searchResults.length > 0" id="loadBtn" @click="loadMore">Load more</button>
         </div>
-        <div class="listAdd" v-if="listAdder">
+        <div id="listAdd">
             <div id="listAddBG">
                 <p style="margin: 0 0 10px 0; padding: 0;">Add to list</p>
                 <div class="innerlist">
                     <div v-for="(object,index) in lists" v-bind:key="index">
-                    <button id="list" v-on:click="addVideo(selectedVideo, lists[index].id)">{{ lists[index].name }}</button>
+                        <button class="list" @click="addVideo(selectedVideo, lists[index]._id)">{{ lists[index].name }}</button>
                     </div>
                     <br>
                 </div>
-                <button id="cancel" v-on:click="listAdder=false">Cancel</button>
+                <button id="cancel" @click="addVideoDialog(false)">Cancel</button>
             </div>
         </div>
     </div>
@@ -40,7 +40,6 @@ export default {
             searchResults: [],
             nextPage: "",
             apiKey: "",
-            listAdder: false,
             selectedVideo: "",
             lists: []
         }
@@ -81,25 +80,36 @@ export default {
             this.SET_VIDEO(video);
         },
         addToList: function(video) {
-            this.getLists();
-            this.listAdder = true;
             this.selectedVideo = video;
+            this.getUserLists();
+            this.addVideoDialog(true);
         },
-        getLists: async function() {
-            const theUser = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/user', {
+        getUserLists: async function() {
+            const theLists = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/userlists', {
                 method: "get",
                 withCredentials: true
             });
-            this.lists = theUser.data[0].lists;
+            this.lists = theLists.data;
+            this.lists.sort(function(a, b) { 
+                return a.name > b.name ? 1 : -1;
+            });
+        },
+        addVideoDialog: function(state) {
+            let element = document.getElementById("listAdd");
+            if(state) {
+                element.style.display = "block";
+            } else {
+                element.style.display = "none";
+            }
         },
         addVideo: async function(video, theList) {
             let theVid = video;
-            const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/add', {
+            const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/addvideo', {
                 method: "post",
-                data: {type: 'video' ,list: theList, video: theVid},
+                data: {list: theList, video: theVid},
                 withCredentials: true
             });
-            this.listAdder = false;
+            this.addVideoDialog(false);
             this.selectedVideo = "";
             console.log(response);
         },
@@ -136,12 +146,12 @@ export default {
     watch: {
         $route() {
             if(this.$cookie.get('public_key')) {
-            this.apiKey = process.env.VUE_APP_APIKEY;
+                this.apiKey = process.env.VUE_APP_APIKEY;
             } else {
                 if(this.$cookie.get('api_key') && this.$cookie.get('api_key')!="") {
                     this.apiKey = this.$cookie.get('api_key');
                 } else {
-                    alert("You have to add YouTube API key in the settings!");
+                    alert("You have to specify YouTube API key in the settings!");
                 }
             }
             this.searchTerm = this.$route.query.q;
@@ -152,7 +162,8 @@ export default {
 </script>
 
 <style scoped>
-.listAdd {
+#listAdd {
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -181,7 +192,7 @@ export default {
     margin: auto;
     border-radius: 10px;
 }
-#list {
+.list {
     background-color: rgb(168, 61, 61);
     border: none;
     border-radius: 10px;
@@ -208,7 +219,7 @@ export default {
     margin-right: 10vw;
     margin-top: 80px;
 }
-.loadBtn {
+#loadBtn {
     background-color: rgb(168, 61, 61);
     border: none;
     color: white;
@@ -217,6 +228,7 @@ export default {
     margin: 20px auto 20px auto;
     padding: 10px 30px 10px 30px;
     border-radius: 20px;
+    font-size: 15px;
 }
 .results {
     padding-bottom: 90px;

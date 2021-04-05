@@ -1,18 +1,18 @@
 <template>
     <div class="container">
         <p id="listName">{{ listName }}</p>
-        <p id="listInfo">{{ songs.length }} songs</p>
+        <p id="listInfo">{{ videos.length }} tracks</p>
         <button id="listPlay" v-on:click="playList(0)">Play</button>
         <button id="listShuffle" v-on:click="shuffleList()"><ShuffleIcon class="icons"/></button>
         <button id="listEdit" v-on:click="editList()"><Edit2Icon class="icons"/></button>
         <div class="results">
-            <div class="result" v-on:click="playList(index)" v-for="(object,index) in songs" v-bind:key="index">
-                <img class="image" v-bind:src="songs[index].video.snippet.thumbnails.medium.url">
+            <div class="result" v-on:click="playList(index)" v-for="(object,index) in videos" v-bind:key="index">
+                <img class="image" v-bind:src="videos[index].video.snippet.thumbnails.medium.url">
                 <button class="nBtn">{{ index+1 }}</button>
-                <p v-if="!shuffle && (index != songs.length - queue.length - 1 || list != listId)" class="title">{{ songs[index].video.snippet.title }}</p>
-                <p v-if="!shuffle && (index == songs.length - queue.length - 1 && list == listId)" class="title" style="color: rgb(168, 61, 61);">{{ songs[index].video.snippet.title }}</p>
-                <p v-if="shuffle && (index != shuffledList[shuffledList.length - queue.length -1 ].order -1 || list != listId)" class="title">{{ songs[index].video.snippet.title }}</p>
-                <p v-if="shuffle && (index == shuffledList[shuffledList.length - queue.length -1].order -1 && list == listId)" class="title" style="color: rgb(168, 61, 61);">{{ songs[index].video.snippet.title }}</p>
+                <p v-if="!shuffle && (index != videos.length - queue.length - 1 || list != listId)" class="title">{{ videos[index].video.snippet.title }}</p>
+                <p v-if="!shuffle && (index == videos.length - queue.length - 1 && list == listId)" class="title" style="color: rgb(168, 61, 61);">{{ videos[index].video.snippet.title }}</p>
+                <p v-if="shuffle && (index != shuffledList[shuffledList.length - queue.length -1 ].order -1 || list != listId)" class="title">{{ videos[index].video.snippet.title }}</p>
+                <p v-if="shuffle && (index == shuffledList[shuffledList.length - queue.length -1].order -1 && list == listId)" class="title" style="color: rgb(168, 61, 61);">{{ videos[index].video.snippet.title }}</p>
             </div>
         </div>
         <p v-if="shuffle" id="shuffleText">Shuffling...</p>
@@ -32,48 +32,51 @@ export default {
     data() {
         return {
             listId: "",
-            songs: [],
+            videos: [],
             listName: "",
+            listOwner: ""
         }
     },
     methods: {
         playList: function(index) {
-            if(this.songs.length > 0) {
+            if(this.videos.length > 0) {
                 if(this.shuffle) {
                     this.CLEAR_VIDEO();
                     this.SET_SHUFFLE(false);
                 }
                 this.SET_LIST(this.listId);
-                this.SET_VIDEO(this.songs[index].video);
+                this.SET_VIDEO(this.videos[index].video);
                 for(let i = index-1; i >= 0; i--) {
-                    this.HISTORY_VIDEO(this.songs[i].video);
+                    this.HISTORY_VIDEO(this.videos[i].video);
                 }
-                for(let i = this.songs.length-1; i > index; i--) {
-                    this.QUEUE_VIDEO(this.songs[i].video);
+                for(let i = this.videos.length-1; i > index; i--) {
+                    this.QUEUE_VIDEO(this.videos[i].video);
                 }
             }
         },
         shuffleList: function() {
-            if(this.songs.length > 0) {
+            if(this.videos.length > 0) {
                 this.CLEAR_VIDEO();
-                var shuffledSongs = this.songs.slice().sort(() => Math.random() - 0.5);
+                var shuffledvideos = this.videos.slice().sort(() => Math.random() - 0.5);
                 this.SET_SHUFFLE(true);
-                this.SET_SHUFFLE_LIST(shuffledSongs);
+                this.SET_SHUFFLE_LIST(shuffledvideos);
                 this.SET_LIST(this.listId);
-                this.SET_VIDEO(shuffledSongs[0].video);
-                for(let i = shuffledSongs.length-1; i > 0; i--) {
-                    this.QUEUE_VIDEO(shuffledSongs[i].video);
+                this.SET_VIDEO(shuffledvideos[0].video);
+                for(let i = shuffledvideos.length-1; i > 0; i--) {
+                    this.QUEUE_VIDEO(shuffledvideos[i].video);
                 }
             }
         },
         getVideos: async function() {
-            const theUser = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/user', {
-                method: "get",
+            const theList = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/list', {
+                method: "post",
+                data: {list: this.listId},
                 withCredentials: true
             });
-            this.songs = theUser.data[0].added_videos.filter(x => x.list === this.listId);
-            this.songs.sort((a, b) => a.order - b.order);
-            this.listName = theUser.data[0].lists.filter(x => x.id === this.listId)[0].name;
+            this.videos = theList.data[0].videos;
+            this.videos.sort((a, b) => a.order - b.order);
+            this.listName = theList.data[0].name;
+            this.listOwner = theList.data[0].owner;
         },
         editList: function() {
             this.$router.push('/edit?l=' + this.listId);
@@ -130,27 +133,31 @@ export default {
     background-color: rgb(168, 61, 61);
     border: none;
     border-radius: 10px;
-    padding: 10px 30px 10px 30px;
+    padding: 0 30px 0 30px;
+    height: 38px;
     color: white;
-    margin: 20px 5px 10px 0;
+    margin: 10px 5px 0 0;
     cursor: pointer;
+    font-size: 15px;
 }
 #listShuffle {
     background-color: rgb(168, 61, 61);
     border: none;
     border-radius: 10px;
-    padding: 10px 20px 10px 20px;
+    padding: 0 30px 0 30px;
+    height: 38px;
     color: white;
-    margin: 20px 5px 10px 0;
+    margin: 10px 5px 0 0;
     cursor: pointer;
 }
 #listEdit {
     background-color: rgb(73, 73, 73);
     border: none;
     border-radius: 10px;
-    padding: 10px 20px 10px 20px;
+    padding: 0 30px 0 30px;
+    height: 38px;
     color: white;
-    margin: 20px 5px 10px 0;
+    margin: 10px 5px 0 0;
     cursor: pointer;
 }
 .icons {
@@ -159,7 +166,7 @@ export default {
     margin-bottom: -3px;
 }
 .results {
-    padding-bottom: 120px;
+    padding: 10px 0 120px 0;
 }
 .result {
     background-color: rgb(20, 20, 20);

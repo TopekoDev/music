@@ -1,19 +1,19 @@
 <template>
     <div class="container">
         <input id="listName" autocomplete="off" name="name" type="text" placeholder="" v-model="listName" />
-        <p id="listInfo">{{ songs.length }} songs</p>
+        <p id="listInfo">{{ videos.length }} videos</p>
         <button id="listConfirm" v-on:click="editList()"><SaveIcon class="icons" /></button>
         <button id="listCancel" v-on:click="cancel()"><XSquareIcon class="icons" /></button>
         <button id="listRemove" v-on:click="confirmation=true"><TrashIcon class="icons" /></button>
         <div id="results">
-            <p>Sort items by dragging. Remove items by clicking the trash can.</p>
-            <div class="result" v-for="(object,index) in songs" v-bind:key="index" draggable="true" v-on:dragstart="dragStart(songs[index].order)" v-on:dragend="dragEnd()" v-on:dragover="dragOver(songs[index].order)">
+            <p>Sort items by dragging. Remove items by clicking "-".</p>
+            <div class="result" v-for="(object,index) in videos" v-bind:key="index" draggable="true" v-on:dragstart="dragStart(videos[index].order)" v-on:dragend="dragEnd()" v-on:dragover="dragOver(videos[index].order)">
                 <div v-if="target == index+1 && target < draggable" id="lineA"></div>
                 <div v-if="target == index+1 && target > draggable" id="line"></div>
-                <img class="image" v-bind:src="songs[index].video.snippet.thumbnails.medium.url">
+                <img class="image" v-bind:src="videos[index].video.snippet.thumbnails.medium.url">
                 <button class="nBtn">{{ index+1 }}</button>
-                <button v-on:click.stop v-on:click="removeVideo(songs[index].id)" class="oBtn">🗑️</button>
-                <p class="title">{{ songs[index].video.snippet.title }}</p>
+                <button v-on:click.stop v-on:click="removeVideo(videos[index].id)" class="oBtn">-</button>
+                <p class="title">{{ videos[index].video.snippet.title }}</p>
             </div>
         </div>
 
@@ -43,42 +43,43 @@ export default {
     data() {
         return {
             listId: "",
-            songs: [],
+            videos: [],
             listName: "",
             draggable: null,
             target: null,
             toRemove: [],
             confirmation: false,
             ogListName: "",
-            ogSongs: []
+            ogvideos: []
         }
     },
     methods: {
         getVideos: async function() {
-            const theUser = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/user', {
-                method: "get",
+            const theList = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/list', {
+                method: "post",
+                data: {list: this.listId},
                 withCredentials: true
             });
-            this.songs = theUser.data[0].added_videos.filter(x => x.list === this.listId);
-            this.songs.sort((a, b) => a.order - b.order);
-            this.listName = theUser.data[0].lists.filter(x => x.id === this.listId)[0].name;
+            this.videos = theList.data[0].videos;
+            this.videos.sort((a, b) => a.order - b.order);
+            this.listName = theList.data[0].name;
         },
         cancel: function() {
             this.$router.push('/list?l=' + this.listId);
         },
         removeVideo: async function(theId) {
             this.toRemove.push(theId);
-            var removeIndex = this.songs.map(function(a) { return a.id; }).indexOf(theId);
-            for(let i = removeIndex; i < this.songs.length; i++) {
-                this.songs[i].order -= 1;
+            var removeIndex = this.videos.map(function(a) { return a.id; }).indexOf(theId);
+            for(let i = removeIndex; i < this.videos.length; i++) {
+                this.videos[i].order -= 1;
             }
-            this.songs.splice(removeIndex, 1);
-            this.songs.sort((a, b) => a.order - b.order);
+            this.videos.splice(removeIndex, 1);
+            this.videos.sort((a, b) => a.order - b.order);
         },
         removeList: async function() {
-            const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/remove', {
+            const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/deletelist', {
                 method: "post",
-                data: {type: 'list', id: this.listId},
+                data: {list: this.listId},
                 withCredentials: true
             });
             console.log(response);
@@ -87,24 +88,17 @@ export default {
         editList: async function() {
             if(this.toRemove.length > 0) {
                 for(let i = 0; i < this.toRemove.length; i++) {
-                    await axios(process.env.VUE_APP_SERVER_ADDRESS + '/remove', {
+                    await axios(process.env.VUE_APP_SERVER_ADDRESS + '/deletevideo', {
                         method: "post",
-                        data: {type: 'video', id: this.toRemove[i]},
+                        data: {list: this.listId, video: this.toRemove[i]},
                         withCredentials: true
                     });
                 }
             }
-            if(this.songs != this.ogSongs) {
-                await axios(process.env.VUE_APP_SERVER_ADDRESS + '/edit', {
+            if(this.videos != this.ogvideos || this.listName != this.ogListName) {
+                await axios(process.env.VUE_APP_SERVER_ADDRESS + '/editlist', {
                     method: "post",
-                    data: {type: 'list', items: this.songs},
-                    withCredentials: true
-                });
-            }
-            if(this.listName != this.ogListName) {
-                await axios(process.env.VUE_APP_SERVER_ADDRESS + '/edit', {
-                    method: "post",
-                    data: {type: 'listname', id: this.listId, list: this.listName},
+                    data: {list: this.listId, name: this.listName, videos: this.videos},
                     withCredentials: true
                 });
             }
@@ -120,16 +114,16 @@ export default {
             if(this.target != this.draggable) {
                 if(this.target < this.draggable) {
                     for(let i = this.target-1; i < this.draggable-1; i++) {
-                        this.songs[i].order += 1;
+                        this.videos[i].order += 1;
                     }
-                    this.songs[this.draggable-1].order = this.target;
+                    this.videos[this.draggable-1].order = this.target;
                 } else {
                     for(let i = this.target-1; i > this.draggable-1; i--) {
-                        this.songs[i].order -= 1;
+                        this.videos[i].order -= 1;
                     }
-                    this.songs[this.draggable-1].order = this.target;
+                    this.videos[this.draggable-1].order = this.target;
                 }
-                this.songs.sort((a, b) => a.order - b.order);
+                this.videos.sort((a, b) => a.order - b.order);
                 this.target = null;
                 this.draggable = null;
             }
@@ -221,27 +215,30 @@ export default {
     background-color: rgb(168, 61, 61);
     border: none;
     border-radius: 10px;
-    padding: 10px 30px 10px 30px;
+    padding: 0 30px 0 30px;
+    height: 38px;
     color: white;
-    margin: 20px 5px 10px 0;
+    margin: 10px 5px 0 0;
     cursor: pointer;
 }
 #listCancel {
     background-color: rgb(168, 61, 61);
     border: none;
     border-radius: 10px;
-    padding: 10px 20px 10px 20px;
+    padding: 0 30px 0 30px;
+    height: 38px;
     color: white;
-    margin: 20px 5px 10px 0;
+    margin: 10px 5px 0 0;
     cursor: pointer;
 }
 #listRemove {
     background-color: rgb(73, 73, 73);
     border: none;
     border-radius: 10px;
-    padding: 10px 20px 10px 20px;
+    padding: 0 30px 0 30px;
+    height: 38px;
     color: white;
-    margin: 20px 5px 10px 0;
+    margin: 10px 5px 0 0;
     cursor: pointer;
 }
 

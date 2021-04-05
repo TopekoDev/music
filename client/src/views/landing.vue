@@ -2,8 +2,8 @@
     <div class="container">
         <div class="centered">
             <div class="header">
-                <h1>TZMusic</h1>
-                <p>Opensource YouTube powered music player.</p>
+                <h1>music.topekodev</h1>
+                <p>Open source YouTube powered music player.</p>
             </div>
             <div class="buttons">
                 <button v-on:click="login">Login</button><br>
@@ -69,7 +69,8 @@ export default {
     margin: 0 auto 10px auto;
     padding: 10px 30px 10px 30px;
     color: white;
-    width: 200px;
+    width: 230px;
+    font-size: 15px;
 }
 #noaccBtn {
     background-color: transparent;

@@ -1,14 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/user.js");
+const History = require("../models/history.js");
 const bcrypt = require("bcryptjs");
 
-//set environment variables
-const {
-    NODE_ENV, PORT, DB_URL, TOKEN_SECRET, CLIENT_DOMAIN
-} = process.env;
-
-//validation
+//validation schema
 const Joi = require("joi");
 const valSchema = {
   username: Joi.string().alphanum().min(3).max(20).required(),
@@ -33,21 +29,23 @@ router.post("/", async (req, res) => {
     username: req.body.username,
     password: hashedPassword
   });
-  try {
-    //save user to database
-    await user.save();
-    //send details
-    res.json({"msg":"Registered as " + user.username,"status":"success"});
-  } catch(error) {
-    res.send(error);
-  }
-});
-
-router.get("/", (req, res) => {
-    res.send({
-        message: 'register',
-        tip: `post with username and password!`,
+  //save user to database
+  user.save(async function(err, nuser) {
+    if(err) {
+      return res.json({"msg":"Failed", "status":"fail"});
+    }
+    //create history for user
+    const history = new History({
+      user: nuser.id,
     });
+    history.save(function(err) {
+      if(err) {
+        return res.json({"msg":"Failed", "status":"fail"});
+      }
+      //send details
+      res.json({"msg":"Registered as " + user.username,"status":"success"});
+    });
+  });
 });
 
 module.exports = router;
