@@ -21,9 +21,6 @@ const theSchema = mongoose.Schema({
   lists: {
     type: Array
   },
-  favourites: {
-    type: Array
-  },
   recent: {
     type: Array
   }

@@ -16,7 +16,7 @@ router.post('/', verify, async (req, res) => {
             var theId = nlist.id;
             //add list to user
             await User.findByIdAndUpdate(req.user.id, {$push: {lists: {id: theId}}}, {safe: true, upsert: true});
-            res.send("success")
+            res.json({"msg": "success", "listId": theId});
         });
     } catch(error) {
         res.send(error);

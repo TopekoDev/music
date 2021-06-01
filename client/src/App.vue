@@ -4,6 +4,7 @@
       <navbar v-if="!blacklist.includes($router.currentRoute.path)"/>
       <router-view id="router"/>
       <player v-if="!blacklist.includes($router.currentRoute.path)"/>
+      <listAdder v-if="!blacklist.includes($router.currentRoute.path)"/>
     </div>
   </div>
 </template>
@@ -11,11 +12,14 @@
 <script>
 import player from './components/player';
 import navbar from './components/navbar';
+import listAdder from './components/listadder';
+
 export default {
   name: 'app',
   components: {
     player,
-    navbar
+    navbar,
+    listAdder
   },
   data() {
     return {

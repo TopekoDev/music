@@ -1,5 +1,6 @@
 <template>
     <div class="container">
+    <div class="innerContainer">
         <h1>Settings</h1>
         <h2>YouTube API key (Required):</h2>
         <p style="color: grey; font-size: 13px;">The key will be stored locally as a cookie.</p>
@@ -16,6 +17,7 @@
             <button id="logoutBtn" v-on:click="logout">Logout</button><br>
             <button style="margin-top: 5px;" id="removeAccBtn" v-on:click="removeAccount">Remove account and data</button>
         </div>
+    </div>
     </div>
 </template>
 
@@ -93,10 +95,18 @@ export default {
 
 <style scoped>
 .container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: auto;
+    margin-top: 55px;
+    margin-bottom: 90px;
+}
+.innerContainer {
     margin-left: 10vw;
     margin-right: 10vw;
-    margin-top: 80px;
-    margin-bottom: 110px;
 }
 #keyInput {
     background-color: rgb(25, 25, 25);

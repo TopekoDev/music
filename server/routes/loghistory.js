@@ -21,7 +21,7 @@ router.post('/', verify, async (req, res) => {
         }
         //if history entry was not found, create a new one
         if(data == null) {
-            History.findOneAndUpdate({user: req.user.id}, {$push: {videos: {video: req.body.video, count: 1}}}, {safe: true, upsert: true}, function(err) {
+            History.findOneAndUpdate({user: req.user.id}, {$push: {videos: {video: req.body.video, count: 1}}}, function(err) {
                 console.log(err);
             });
         }

@@ -11,7 +11,9 @@ export default new Vuex.Store({
         history: [],
         list: "",
         shuffle: false,
-        shuffledList: []
+        shuffledList: [],
+        selectedVideo: "",
+        listAdder: false //this is really stupid but couldn't find any other way to trigger same component from anywhere
     },
     getters: {
         
@@ -53,6 +55,15 @@ export default new Vuex.Store({
         },
         SET_SHUFFLE_LIST: (state, songs) => {
             state.shuffledList = songs;
+        },
+        LIST_ADDER: (state, video) => {
+            //stupid ik...
+            if(state.listAdder === true) {
+                state.listAdder = false;
+            } else {
+                state.selectedVideo = video;
+                state.listAdder = true;
+            }
         }
     },
     actions: {

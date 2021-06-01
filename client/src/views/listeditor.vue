@@ -1,12 +1,13 @@
 <template>
     <div class="container" v-if="listOwner === userId">
+    <div class="innerContainer">
         <input id="listName" autocomplete="off" name="name" type="text" placeholder="" v-model="listName" />
-        <p id="listInfo">{{ videos.length }} videos</p>
+        <p id="listInfo">{{ videos.length }} tracks</p>
         <button id="listConfirm" v-on:click="editList()"><SaveIcon class="icons" /></button>
         <button id="listCancel" v-on:click="cancel()"><XSquareIcon class="icons" /></button>
         <button id="listRemove" v-on:click="confirmation=true"><TrashIcon class="icons" /></button>
         <div id="results" v-if="videos.length > 0">
-            <p>Sort items by dragging. Remove items by clicking "-".</p>
+            <p style="font-size: 17px">Sort items by dragging. Remove items by clicking "-".</p>
             <div class="result" v-for="(object,index) in videos" v-bind:key="index" draggable="true" v-on:dragstart="dragStart(videos[index].order)" v-on:dragend="dragEnd()" v-on:dragover="dragOver(videos[index].order)">
                 <div v-if="target == index+1 && target < draggable" id="lineA"></div>
                 <div v-if="target == index+1 && target > draggable" id="line"></div>
@@ -29,6 +30,7 @@
             </div>
         </div>
     </div>
+    </div>
 </template>
 
 <script>
@@ -50,8 +52,6 @@ export default {
             target: null,
             toRemove: [],
             confirmation: false,
-            ogListName: "",
-            ogvideos: [],
             listOwner: "",
             userId: ""
         }
@@ -118,13 +118,11 @@ export default {
                     });
                 }
             }
-            if(this.videos != this.ogvideos || this.listName != this.ogListName) {
-                await axios(process.env.VUE_APP_SERVER_ADDRESS + '/editlist', {
-                    method: "post",
-                    data: {list: this.listId, name: this.listName, videos: this.videos},
-                    withCredentials: true
-                });
-            }
+            await axios(process.env.VUE_APP_SERVER_ADDRESS + '/editlist', {
+                method: "post",
+                data: {list: this.listId, name: this.listName, videos: this.videos, public: this.listPublic},
+                withCredentials: true
+            });
             this.CLEAR_VIDEO();
             this.SET_SHUFFLE(false);
             if(this.videos.length > 0) {
@@ -183,6 +181,20 @@ export default {
 </script>
 
 <style scoped>
+.container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: auto;
+    margin-top: 55px;
+    margin-bottom: 90px;
+}
+.innerContainer {
+    margin-left: 10vw;
+    margin-right: 10vw;
+}
 .removeConfirm {
     position: fixed;
     top: 0;
@@ -230,6 +242,7 @@ export default {
     width: 225px;
     padding: 0 5px 0 5px;
     border-radius: 2px;
+    margin-top: 30px;
 }
 #listInfo {
     font-size: 15px;
@@ -273,7 +286,7 @@ export default {
     margin-bottom: -3px;
 }
 #results {
-    padding-bottom: 100px;
+    padding-bottom: 10px;
 }
 #line {
     height: 2px;
@@ -339,10 +352,5 @@ export default {
 }
 .oBtn:hover {
     color: white;
-}
-.container {
-    margin-left: 10vw;
-    margin-right: 10vw;
-    margin-top: 80px;
 }
 </style>

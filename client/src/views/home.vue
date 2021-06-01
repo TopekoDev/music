@@ -1,15 +1,15 @@
 <template>
     <div class="container">
-        <div v-if="!loggedIn" class="login">
-            <h1 style="font-size: 30px;">Demo mode</h1>
+        <div v-if="!loggedIn" class="innerContainer">
+            <h1 style="font-size: 30px;">Demo Mode</h1>
             <p>In order to unlock all features <a href="/login">Log in</a> or <a href="/register">Create account</a>.</p>
         </div>
-        <div v-if="loggedIn">
-            <h1 style="font-size: 30px;">Your music</h1>
+        <div v-if="loggedIn" class="innerContainer">
+            <h1 style="font-size: 30px;">Your Music</h1>
             <div class="line" style="width: 100%; margin-top: -10px;"></div>
-            <h2 style="font-size: 18px;">Recently played</h2>
+            <h2 style="font-size: 18px;">Recently Played</h2>
             <p style="margin: 0; padding: 0; color: grey;" v-if="recent.length < 1">Music you've recently played will be shown here!</p>
-            <div id="recents">
+            <div id="recentGrid">
                 <div class="recent" @click="setVideo(recent[index].video)" v-for="(object,index) in recent" v-bind:key="index">
                     <div class="image" v-bind:style="{ backgroundImage: `url(${recent[index].video.snippet.thumbnails.medium.url})` }">
                         <div class="overlay"></div>
@@ -17,8 +17,8 @@
                     </div>
                 </div>
             </div>
-            <h2 style="font-size: 18px;">Lists</h2>
-            <div id="listsGrid">
+            <h2 style="font-size: 18px;">Your Lists</h2>
+            <div class="listsGrid">
                 <div class="list" @click="navigate('list?l=' + lists[index]._id)" v-for="(object,index) in lists" v-bind:key="index">
                     <ListIcon class="listIcon"/>
                     <p class="listName">{{ lists[index].name }}</p>
@@ -28,16 +28,21 @@
                     <p class="listName">New List</p>
                 </div>
             </div>
-            <h2 style="font-size: 18px;">Favourited lists</h2>
-            <p style="margin: 0; padding: 0; color: grey;" v-if="favourites.length < 1">Find lists and favourite them!</p>
-            <div id="favourites">
-
-            </div>
             <h1 style="font-size: 30px;">Discover</h1>
             <div class="line" style="width: 100%; margin-top: -10px;"></div>
-            <h2 style="font-size: 18px;">Made for you</h2>
-            <h2 style="font-size: 18px;">Popular lists</h2>
-
+            <h2 style="font-size: 18px;">Made for You</h2>
+            <div class="cardGrid">
+                <div id="personalTop" @click="navigate('personaltop')" v-if="this.recent.length > 0">
+                    <h2>Your Top<br>Songs</h2>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="#c96056" fill-opacity="1" d="M0,32L60,64C120,96,240,160,360,186.7C480,213,600,203,720,176C840,149,960,107,1080,80C1200,53,1320,43,1380,37.3L1440,32L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path></svg>
+                </div>
+                <div id="personalRecommendations" @click="navigate('recommended')" v-if="this.recent.length > 0">
+                    <h2>You<br>Might Like</h2>
+                </div>
+                <div id="trending" @click="navigate('trending')">
+                    <h2>Trending<br>In Your Region</h2>
+                </div>
+            </div>
         </div>
         <div id="createList">
             <div id="createListBG">
@@ -67,15 +72,14 @@ export default {
             loggedIn: false,
             lists: [],
             listName: "",
-            recent: [],
-            favourites: []
+            recent: []
         }
     },
     methods: {
         navigate: function(route) {
             this.$router.push('/' + route);
         },
-        getUserLists: async function() {
+        getLists: async function() {
             const theLists = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/userlists', {
                 method: "get",
                 withCredentials: true
@@ -112,7 +116,7 @@ export default {
                 });
                 console.log(response);
                 this.createListDialog(false);
-                this.getUserLists();
+                this.getLists();
             }
         },
         setVideo: function(video) {
@@ -138,7 +142,7 @@ export default {
     mounted() {
         if(this.$cookie.get('loggedin') == "true") {
             this.loggedIn = true;
-            this.getUserLists();
+            this.getLists();
             this.getUser();
         } else {
             this.loggedIn = false;
@@ -148,15 +152,22 @@ export default {
 </script>
 
 <style scoped>
-#banner {
-    width: 100%;
-    height: 100px;
-    border-radius: 10px;
-    background-color: #4158D0;
-    background-image: linear-gradient(43deg, #2572d6 0%, #c43453 46%, #ff8d70 100%);
-
+.container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: auto;
+    margin-top: 55px;
+    margin-bottom: 90px;
 }
-#recents {
+.innerContainer {
+    margin-left: 10vw;
+    margin-right: 10vw;
+    min-width: 800px;
+}
+#recentGrid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     grid-column-gap: 10px;
@@ -178,25 +189,22 @@ export default {
 .recent .overlay {
     width: 100%;
     height: 100%;
-    opacity: 0%;
     border-radius: 5px;
-    background-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0, 0, 0, 0) 40%, rgba(0,0,0,0.4) 100%);
+    background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0, 0, 0, 0) 40%, rgba(0,0,0,0.4) 100%);
 }
-.overlay:hover {
-    opacity: 100%;
+.recent:hover .overlay {
+    background: rgba(0,0,0,0.4);
 }
 .recent .title {
-    display: none;
     position: absolute;
-    margin: -30px 0 0 15px;
-    width: 85%;
+    bottom: -5px;
+    padding: 0 10px;
+    left: 0;
+    width: 90%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 13px;
-}
-.recent .overlay:hover ~ p {
-    display: block;
 }
 #createList {
     display: none;
@@ -249,7 +257,7 @@ export default {
     margin: auto;
     border-radius: 5px;
 }
-#listsGrid {
+.listsGrid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     grid-column-gap: 10px;
@@ -282,16 +290,72 @@ export default {
     text-overflow: ellipsis;
     padding: 0 10px 0 50px;
 }
+.cardGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(242.5px, 1fr));
+    grid-column-gap: 20px;
+    grid-row-gap: 20px;
+    min-width: 800px;
+    margin-bottom: 30px;
+}
+.cardGrid div {
+    transition: all .1s;
+}
+.cardGrid > div:hover {
+    transform: scale(1.02);
+}
+#personalTop {
+    height: 20vw;
+    min-height: 200px;
+    border-radius: 5px;
+    background: rgb(201,96,86);
+    background: linear-gradient(0deg, rgba(201,96,86,1) 0%, rgba(201,96,80,1) 22%, rgba(179,60,60,1) 22%, rgba(162,53,42,1) 100%);
+    cursor: pointer;
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.6));
+}
+#personalTop h2 {
+    padding: 20px;
+    margin: 0;
+    font-size: max(22px, 2.2vw);
+    
+}
+#personalTop svg {
+    position: absolute;
+    bottom: max(35px, 3.5vw);
+    left: 0;
+}
+#personalRecommendations {
+    height: 20vw;
+    min-height: 200px;
+    border-radius: 5px;
+    background: rgb(87,37,177);
+    background: linear-gradient(0deg, rgba(87,37,177,1) 26%, rgba(24,117,179,1) 100%);
+    cursor: pointer;
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.6));
+}
+#personalRecommendations h2 {
+    padding: 20px;
+    margin: 0;
+    font-size: max(22px, 2.2vw);
+    
+}
+#trending {
+    height: 20vw;
+    min-height: 200px;
+    border-radius: 5px;
+    background: rgb(177,101,37);
+    background: linear-gradient(0deg, rgba(177,101,37,1) 34%, rgba(179,127,24,1) 100%); 
+    cursor: pointer;
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.6));
+}
+#trending h2 {
+    padding: 20px;
+    margin: 0;
+    font-size: max(22px, 2.2vw);
+    
+}
 .line {
     background-color: rgb(60, 60, 60);
     height: 1px;
-}
-
-.container {
-    margin-left: 10vw;
-    margin-right: 10vw;
-    margin-top: 80px;
-    margin-bottom: 110px;
-    min-width: 800px;
 }
 </style>

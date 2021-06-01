@@ -19,10 +19,11 @@ router.post('/', verify, async (req, res) => {
             res.send(error);
         }
     }
-    //modify list name
+    //modify list data
     try {
         await List.findOneAndUpdate({_id: req.body.list, owner: req.user.id}, {
-            name: req.body.name
+            name: req.body.name,
+            public: req.body.public
         });
         //send details
         res.send("success");

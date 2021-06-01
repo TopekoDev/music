@@ -1,24 +1,27 @@
 <template>
-    <div class="container" v-if="videos.length > 0">
+    <div class="container" v-if="videos.length > 0 && listOwner === userId">
+    <div class="innerContainer">
         <img id="listImg" v-bind:src="videos[0].video.snippet.thumbnails.medium.url">
         <div id="listInfo">
             <p id="listName">{{ listName }}</p>
             <p id="listTracks">{{ videos.length }} tracks</p>
             <button id="listPlay" v-on:click="playList(0)">Play</button>
             <button id="listShuffle" v-on:click="shuffleList()"><ShuffleIcon class="icons"/></button>
-            <button v-if="listOwner === userId" id="listEdit" v-on:click="editList()"><Edit2Icon class="icons"/></button>
+            <button id="listEdit" v-on:click="editList()"><Edit2Icon class="icons"/></button>
         </div>
+        <p v-if="shuffle" id="shuffleText">Shuffling...</p>
         <div class="results">
             <div class="result" v-on:click="playList(index)" v-for="(object,index) in videos" v-bind:key="index">
                 <img class="image" v-bind:src="videos[index].video.snippet.thumbnails.medium.url">
                 <button class="nBtn">{{ index+1 }}</button>
+                <button v-on:click.stop @click="addToList(videos[index].video)" class="oBtn">+</button>
                 <p v-if="!shuffle && (index != videos.length - queue.length - 1 || list != listId)" class="title">{{ videos[index].video.snippet.title }}</p>
                 <p v-if="!shuffle && (index == videos.length - queue.length - 1 && list == listId)" class="title" style="color: rgb(168, 61, 61);">{{ videos[index].video.snippet.title }}</p>
                 <p v-if="shuffle && (index != shuffledList[shuffledList.length - queue.length -1 ].order -1 || list != listId)" class="title">{{ videos[index].video.snippet.title }}</p>
                 <p v-if="shuffle && (index == shuffledList[shuffledList.length - queue.length -1].order -1 && list == listId)" class="title" style="color: rgb(168, 61, 61);">{{ videos[index].video.snippet.title }}</p>
             </div>
         </div>
-        <p v-if="shuffle" id="shuffleText">Shuffling...</p>
+    </div>
     </div>
 </template>
 
@@ -38,7 +41,6 @@ export default {
             videos: [],
             listName: "",
             listOwner: "",
-            listPublic: Boolean,
             userId: "",
         }
     },
@@ -47,7 +49,7 @@ export default {
             this.listId = this.$route.query.l;
             await this.getVideos();
             await this.getUser();
-            if((this.listOwner !== this.userId) && (this.listPublic != true)) {
+            if((this.listOwner !== this.userId)) {
                 this.$router.push('/home');
             }
             if(this.videos.length < 1) {
@@ -93,7 +95,6 @@ export default {
             this.videos.sort((a, b) => a.order - b.order);
             this.listName = theList.data[0].name;
             this.listOwner = theList.data[0].owner;
-            this.listPublic = theList.data[0].public;
         },
         getUser: async function() {
             const theUser = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/user', {
@@ -101,13 +102,38 @@ export default {
                 withCredentials: true
             });
             if(theUser.data[0] === undefined) {
-                this.userId = "demo";
+                this.demo = true;
             } else {
+                this.demo = false;
                 this.userId = theUser.data[0]._id;
             }
         },
         editList: function() {
             this.$router.push('/edit?l=' + this.listId);
+        },
+        addToList: function(video) {
+            this.LIST_ADDER(video);
+        },
+        cloneList: async function() {
+            //Maybe there's a better way...
+            //Create list for user
+            axios(process.env.VUE_APP_SERVER_ADDRESS + '/createlist', {
+                method: "post",
+                data: {name: this.listName, public: false},
+                withCredentials: true
+            }).then(async (response) => {
+                //Add videos to the list
+                for(let i = 0; i < this.videos.length; i++) {
+                    await axios(process.env.VUE_APP_SERVER_ADDRESS + '/addvideo', {
+                        method: "post",
+                        data: {list: response.data.listId, video: this.videos[i].video},
+                        withCredentials: true
+                    })
+                }
+                this.$router.push('/list?l=' + response.data.listId);
+            }).catch(function(err) {
+                console.log(err)
+            });
         },
         ...mapMutations([
             'SET_VIDEO',
@@ -116,7 +142,8 @@ export default {
             'SET_LIST',
             'SET_SHUFFLE',
             'SET_SHUFFLE_LIST',
-            'CLEAR_VIDEO'
+            'CLEAR_VIDEO',
+            'LIST_ADDER'
         ])
     },
     computed: {
@@ -141,15 +168,32 @@ export default {
 </script>
 
 <style scoped>
+.container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: auto;
+    margin-top: 55px;
+    margin-bottom: 90px;
+}
+.innerContainer {
+    margin-left: 10vw;
+    margin-right: 10vw;
+}
 #shuffleText {
-    margin-top: -120px;
+    margin-top: -10px;
+    padding: 0;
+    position: absolute;
     color: rgb(139, 139, 139);
+    font-size: 15px;
 }
 #listImg {
     height: 150px;
     width: auto;
     margin-bottom: -14px;
-    margin-top: 10px;
+    margin-top: 30px;
     border-radius: 5px;
     filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.6));
 }
@@ -188,6 +232,17 @@ export default {
     margin: 0 5px 0 0;
     cursor: pointer;
 }
+#listClone {
+    background-color: rgb(40, 141, 62);
+    border: none;
+    border-radius: 10px;
+    padding: 0 30px 0 30px;
+    height: 38px;
+    color: white;
+    margin: 0 5px 0 0;
+    cursor: pointer;
+    font-size: 15px;
+}
 #listEdit {
     background-color: rgb(73, 73, 73);
     border: none;
@@ -204,7 +259,7 @@ export default {
     margin-bottom: -3px;
 }
 .results {
-    padding: 10px 0 120px 0;
+    padding: 10px 0 10px 0;
 }
 .result {
     background-color: rgb(30, 30, 30);
@@ -237,15 +292,24 @@ export default {
     height: 100%;
     min-width: 40px;
     font-size: 13px;
-    cursor: pointer;
 }
 .result:hover .nBtn {
-    color: white;
-    background-color: rgb(27, 27, 27);
+    display: none;
 }
-.container {
-    margin-left: 10vw;
-    margin-right: 10vw;
-    margin-top: 80px;
+.result:hover .oBtn {
+    display: block;
+}
+.oBtn {
+    background-color: rgb(27, 27, 27);
+    border: none;
+    color: rgb(196, 196, 196);
+    height: 100%;
+    min-width: 40px;
+    font-size: 18px;
+    cursor: pointer;
+    display: none;
+}
+.oBtn:hover {
+    color: white;
 }
 </style>

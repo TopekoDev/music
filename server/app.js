@@ -20,7 +20,6 @@ app.use("/deletevideo", require("./routes/deletevideo.js"));
 app.use("/editlist", require("./routes/editlist.js"));
 app.use("/history", require("./routes/history.js"));
 app.use("/list", require("./routes/list.js"));
-app.use("/lists", require("./routes/lists.js"));
 app.use("/userlists", require("./routes/userlists.js"));
 app.use("/loghistory", require("./routes/loghistory.js"));
 app.use("/login", require("./routes/login.js"));

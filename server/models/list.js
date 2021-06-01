@@ -11,16 +11,8 @@ const theSchema = mongoose.Schema({
     min: 1,
     required: true
   },
-  public: {
-    type: Boolean,
-    required: true
-  },
   videos: {
     type: Array
-  },
-  favourites: {
-    type: Number,
-    default: 0
   },
   date: {
     type: Date,

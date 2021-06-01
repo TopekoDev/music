@@ -1,86 +1,63 @@
 <template>
     <div class="container">
     <div class="innerContainer">
-        <h2 style="font-size: 18px;">Search results</h2>
+        <h2 style="font-size: 18px;">What You've Listened to The Most</h2>
         <div class="results">    
-            <div class="result" @click="setVideo(searchResults[index])" v-for="(object,index) in searchResults" v-bind:key="index">
-                <img class="image" v-bind:src="searchResults[index].snippet.thumbnails.default.url">
-                <button class="nBtn">{{ index+1 }}</button>
-                <button v-on:click.stop @click="addToList(searchResults[index])" class="oBtn">+</button>
-                <p class="title">{{ searchResults[index].snippet.title }}</p>
+            <div class="result" @click="setVideo(topResults[index].video)" v-for="(object,index) in topResults" v-bind:key="index">
+                <img class="image" v-bind:src="topResults[index].video.snippet.thumbnails.default.url">
+                <button class="nBtn">{{ topResults[index].count }}</button>
+                <button v-on:click.stop @click="addToList(topResults[index].video)" class="oBtn">+</button>
+                <p class="title">{{ topResults[index].video.snippet.title }}</p>
             </div>
-            <button v-if="searchResults.length > 0" id="loadBtn" @click="loadMore">Load more</button>
+            <button v-if="allResults.length > 0" id="loadBtn" @click="loadMore">Load more</button>
         </div>
     </div>
     </div>
 </template>
 
 <script>
-import searchYoutube from 'youtube-api-v3-search';
-//import axios from 'axios';
+import axios from 'axios';
 import { mapMutations, mapState } from 'vuex';
 
 export default {
-    name: "search",
+    name: "top",
     components: {
         
     },
     data() {
         return {
-            searchTerm: "",
-            searchResults: [],
+            topResults: [],
+            allResults: [],
             nextPage: "",
-            apiKey: "",
-            demo : Boolean
+            apiKey: ""
         }
     },
     methods: {
         init: async function() {
-            if(this.$cookie.get('public_key') == "true") {
-                    this.apiKey = process.env.VUE_APP_APIKEY;
+            if(!this.$cookie.get('loggedin')) {
+                this.$router.push('/home');
             } else {
-                if(this.$cookie.get('api_key') && this.$cookie.get('api_key')!="") {
-                    this.apiKey = this.$cookie.get('api_key');
-                } else {
-                    alert("You need to setup YouTube API key from the settings!");
+                this.getHistory();
+            }
+        },
+        getHistory: async function() {
+            const theResults = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/history', {
+                method: "get",
+                withCredentials: true
+            });
+            this.allResults = theResults.data[0].videos;
+            this.allResults.sort((a, b) => b.count - a.count);
+            this.loadMore();
+        },
+        loadMore: function() {
+            let newArr = this.allResults.slice();
+            for(let i = 0; i < 10; i++) {
+                if(this.allResults[i]) {
+                    this.topResults.push(this.allResults[i]);
+                    newArr.splice(0,1);
                 }
             }
-            if(this.$cookie.get('loggedin')) {
-                this.demo = false;
-            } else {
-                this.demo = true;
-            }
-            this.searchTerm = this.$route.query.q;
-            if(this.searchTerm != "") {
-                this.search();
-            }
-        },
-        search: async function() {
-            var options = {
-                q:this.searchTerm,
-                part:'snippet',
-                type:'video',
-                topicId:'/m/04rlf',
-                maxResults: 10,
-                pageToken: ''
-            }
-            var results = await searchYoutube(this.apiKey, options);
-            this.searchResults = results.items;
-            this.nextPage = results.nextPageToken;
-            console.log(results.items);
-        },
-        loadMore: async function() {
-            var options = {
-                q:this.searchTerm,
-                part:'snippet',
-                type:'video',
-                topicId:'/m/04rlf',
-                maxResults: 10,
-                pageToken: this.nextPage
-            }
-            var results = await searchYoutube(this.apiKey, options);
-            this.searchResults = this.searchResults.concat(results.items);
-            this.nextPage = results.nextPageToken;
+            this.allResults = newArr;
         },
         setVideo: function(video) {
             if(this.shuffle) {
@@ -108,11 +85,6 @@ export default {
     },
     mounted() {
         this.init();
-    },
-    watch: {
-        $route() {
-            this.init();
-        }
     }
 }
 </script>

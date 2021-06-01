@@ -34,18 +34,6 @@
                 <input v-model="volume" type="range" name="volume" id="volume">
             </div>
         </div>
-        <div id="listAdd">
-            <div id="listAddBG">
-                <p style="margin: 0 0 10px 0; padding: 0;">Add to list</p>
-                <div class="innerlist">
-                    <div v-for="(object,index) in lists" v-bind:key="index">
-                        <button class="list" @click="addVideo(selectedVideo, lists[index]._id)">{{ lists[index].name }}</button>
-                    </div>
-                    <br>
-                </div>
-                <button id="cancel" @click="addVideoDialog(false)">Cancel</button>
-            </div>
-        </div>
     </div>
 </template>
 
@@ -75,50 +63,13 @@ export default {
             onRepeat: false,
             isPlaying: false,
             isCued: false,
-            selectedVideo: "",
-            lists: [],
             mobile: false,
             muted: false,
-            expanded: false
+            expanded: false,
+            demo: Boolean
         }
     },
     methods: {
-        addToList: function(video) {
-            if(video.id.videoId != "none") {
-                this.selectedVideo = video;
-                this.getUserLists();
-                this.addVideoDialog(true);
-            }
-        },
-        getUserLists: async function() {
-            const theLists = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/userlists', {
-                method: "get",
-                withCredentials: true
-            });
-            this.lists = theLists.data;
-            this.lists.sort(function(a, b) { 
-                return a.name > b.name ? 1 : -1;
-            });
-        },
-        addVideoDialog: function(state) {
-            let element = document.getElementById("listAdd");
-            if(state) {
-                element.style.display = "block";
-            } else {
-                element.style.display = "none";
-            }
-        },
-        addVideo: async function(video, theList) {
-            let theVid = video;
-            const response = await axios(process.env.VUE_APP_SERVER_ADDRESS + '/addvideo', {
-                method: "post",
-                data: {list: theList, video: theVid},
-                withCredentials: true
-            });
-            this.addVideoDialog(false);
-            this.selectedVideo = "";
-            console.log(response);
-        },
         playVideo: function() {
             if(this.ytInfo.id.videoId != 'none') {
                 this.$refs.youtube.player.playVideo();
@@ -231,6 +182,9 @@ export default {
                 this.seekVideo(0);
             }
         },
+        addToList: function(video) {
+            this.LIST_ADDER(video);
+        },
         openYt: function() {
             window.open("https://youtube.com/watch?v=" + this.ytInfo.id.videoId, "_blank");   
         },
@@ -268,7 +222,8 @@ export default {
             'PREVIOUS_VIDEO',
             'CLEAR_VIDEO',
             'SET_SHUFFLE',
-            'SET_SHUFFLE_LIST'
+            'SET_SHUFFLE_LIST',
+            'LIST_ADDER'
         ])
     },
     computed: {
@@ -289,6 +244,11 @@ export default {
         if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
             console.log("Detected mobile device!");
             this.mobile = true;
+        }
+        if(this.$cookie.get('loggedin')) {
+            this.demo = false;
+        } else {
+            this.demo = true;
         }
     },
     watch: {
@@ -327,61 +287,6 @@ export default {
     overflow: hidden;
     text-overflow: ellipsis;
     margin: 10px 0 0 5px;
-}
-
-#listAdd {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 10;
-    width: 100%;
-    height: 100%;
-    padding-top: 30vh;
-    background-color: rgba(0, 0, 0, 0.5);
-    text-align: center;
-}
-.innerlist {
-    overflow-y: scroll;
-    max-height: 220px;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-.innerlist::-webkit-scrollbar {
-    width: 0px;
-    background: transparent;
-}
-#listAddBG {
-    background-color: rgb(25, 25, 25);
-    width: 300px;
-    height: auto;
-    padding: 20px;
-    margin: auto;
-    border-radius: 10px;
-}
-.list {
-    background-color: rgb(168, 61, 61);
-    border: none;
-    border-radius: 10px;
-    padding: 10px 30px 10px 30px;
-    width: 250px;
-    color: white;
-    cursor: pointer;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin: 10px 0 0 5px;
-    font-size: 15px;
-}
-#cancel {
-    padding: 10px 30px 10px 30px;
-    cursor: pointer;
-    margin-top: 10px;
-    background-color: rgb(25, 25, 25);
-    border: none;
-    border-radius: 10px;
-    color: rgb(139, 139, 139);
-    font-size: 15px;
 }
 
 #expandIcon {

@@ -5,7 +5,7 @@
             <a v-on:click="navigate('settings')"><SettingsIcon class="icon"/>Settings</a>
         </div>
         <div class="search">
-            <input v-on:keyup.enter="search" id="searchBar" v-model="searchField" placeholder="Search YouTube or lists..." type="text">
+            <input v-on:keyup.enter="search" id="searchBar" v-model="searchField" placeholder="Search from YouTube..." type="text">
             <button class="searchBtn" v-on:click="search"><SearchIcon id="sIcon"/></button>
         </div>
     </div>

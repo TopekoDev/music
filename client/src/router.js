@@ -9,6 +9,8 @@ import login from './views/login';
 import settings from './views/settings'
 import list from './views/list';
 import listeditor from './views/listeditor';
+import personaltop from './views/personaltop';
+import recommended from './views/recommended';
 
 Vue.use(Router);
 
@@ -46,6 +48,14 @@ export default new Router({
         {
             path: '/edit',
             component: listeditor
+        },
+        {
+            path: '/personaltop',
+            component: personaltop
+        },
+        {
+            path: '/recommended',
+            component: recommended
         }
     ]
 });
